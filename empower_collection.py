@@ -41,7 +41,6 @@ def auto_walk(wizard, delay=0.1):
 
 # Executes a series of clicks and then waits for a specified amount of time before continuing
 def window_clicks(coord_list, delay=0.1):
-    print("window_clicks function ran")
     for coord in coord_list:
         ahk.click(coord[0], coord[1])
         sleep(delay)
@@ -49,14 +48,12 @@ def window_clicks(coord_list, delay=0.1):
 
 # Returns absolute coords when supplied win.rect and relative coords
 def get_abs_coords(win_coords, relative_coords):
-    print("get_abs_coords function ran")
     absolute_coords = (relative_coords[0] + win_coords[0], relative_coords[1] + win_coords[1])
     return absolute_coords
 
 
 # Returns absolute coords when supplied a window title, relative coords or client coords, and a boolean for Client
 def relative_to_absolute_coords(name, x, y, client=True):
-    print("relative_to_absolute_coords function ran")
     win = get_window(name)
     win_coords = win.rect
     if client:
@@ -69,7 +66,6 @@ def relative_to_absolute_coords(name, x, y, client=True):
 
 # Used for testing. Coverts mouse position to relative coords to be hard programmed into the bot
 def mouse_to_relative_coords():
-    window_name = input("Enter the name of the window: ")
     win = get_window(window_name)
     win_coords = win.rect
     current_coords = ahk.mouse_position
@@ -85,7 +81,6 @@ def mouse_to_relative_coords():
 # Converts a list of coords to a list of absolute coords when supplied
 # a window title, relative coords or client coords, and a boolean for Client
 def coord_list_conversion(wizard, coord_list, client=True):
-    print("coord_list_conversion function ran")
     absolute_coords = []
     for coord in coord_list:
         x = coord[0]
@@ -100,7 +95,6 @@ def coord_list_conversion(wizard, coord_list, client=True):
 
 # Teleports wizard to main account
 def teleport(wizard):
-    print("teleport function ran")
     activate_window(wizard)
     client_coords = [[769, 17], [697, 91], [446, 83], [403, 363]]
     absolute_coords = coord_list_conversion(wizard, client_coords)
