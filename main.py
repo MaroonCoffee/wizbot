@@ -2,6 +2,10 @@ from os import getpid
 from multiprocessing import Process
 import psutil
 import empower_collection
+import ahk
+
+
+ahk = ahk.AHK()
 
 
 def kill_tree(pid):
@@ -12,3 +16,11 @@ def kill_tree(pid):
 
 def battle_loop():
     battle_process = Process(target=empower_collection.battle())
+
+
+def main():
+    pass
+
+
+if __name__ == "__main__":
+    main()

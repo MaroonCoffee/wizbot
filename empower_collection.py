@@ -5,12 +5,20 @@ import image_detection
 ahk = AHK()
 
 
-def activate_window(name):
+# Returns win when supplied window name. Win can be used for ahk functions involving a window
+def get_window(name):
     win_title = str.encode(name)
     win = ahk.find_window(title=win_title)
+    return win
+
+
+# Activates a window when supplied its name
+def activate_window(name):
+    win = get_window(name)
     win.activate()
 
 
+# Holds down or brings up a key and then waits for a specified amount of time before continuing
 def hold_key(key, down=True, delay=0.02):
     if down:
         ahk.key_down(key)
@@ -20,6 +28,7 @@ def hold_key(key, down=True, delay=0.02):
         sleep(delay)
 
 
+# Starts an auto walk for the wizard specified and then waits for a specified amount of time before continuing
 def auto_walk(wizard, delay=0.1):
     activate_window(wizard)
     sleep(0.05)
@@ -30,24 +39,82 @@ def auto_walk(wizard, delay=0.1):
     sleep(delay)
 
 
+# Executes a series of clicks and then waits for a specified amount of time before continuing
 def window_clicks(coord_list, delay=0.1):
+    print("window_clicks function ran")
     for coord in coord_list:
         ahk.click(coord[0], coord[1])
         sleep(delay)
 
 
+# Returns absolute coords when supplied win.rect and relative coords
+def get_abs_coords(win_coords, relative_coords):
+    print("get_abs_coords function ran")
+    absolute_coords = (relative_coords[0] + win_coords[0], relative_coords[1] + win_coords[1])
+    return absolute_coords
+
+
+# Returns absolute coords when supplied a window title, relative coords or client coords, and a boolean for Client
+def relative_to_absolute_coords(name, x, y, client=True):
+    print("relative_to_absolute_coords function ran")
+    win = get_window(name)
+    win_coords = win.rect
+    if client:
+        relative_coords = (x + 8, y + 31)
+    else:
+        relative_coords = (x, y)
+    absolute_coords = get_abs_coords(win_coords, relative_coords)
+    return absolute_coords
+
+
+# Used for testing. Coverts mouse position to relative coords to be hard programmed into the bot
+def mouse_to_relative_coords():
+    window_name = input("Enter the name of the window: ")
+    win = get_window(window_name)
+    win_coords = win.rect
+    current_coords = ahk.mouse_position
+    relative_coords = (current_coords[0] - win_coords[0], current_coords[1] - win_coords[1])
+    print("The relative coords are:", relative_coords)
+    absolute_coords = get_abs_coords(win_coords, relative_coords)
+    print("The absolute coords are:", absolute_coords)
+    print("Testing relative coords in 2 seconds")
+    sleep(2)
+    ahk.mouse_position = absolute_coords
+
+
+# Converts a list of coords to a list of absolute coords when supplied
+# a window title, relative coords or client coords, and a boolean for Client
+def coord_list_conversion(wizard, coord_list, client=True):
+    print("coord_list_conversion function ran")
+    absolute_coords = []
+    for coord in coord_list:
+        x = coord[0]
+        y = coord[1]
+        if client:
+            absolute_coord = relative_to_absolute_coords(wizard, x, y)
+        else:
+            absolute_coord = relative_to_absolute_coords(wizard, x, y, False)
+        absolute_coords.append(absolute_coord)
+    return absolute_coords
+
+
+# Teleports wizard to main account
 def teleport(wizard):
+    print("teleport function ran")
     activate_window(wizard)
-    coords = [[769, 17], [697, 91], [446, 83], [403, 363]]
-    window_clicks(coords)
+    client_coords = [[769, 17], [697, 91], [446, 83], [403, 363]]
+    absolute_coords = coord_list_conversion(wizard, client_coords)
+    window_clicks(absolute_coords)
 
 
+# Teleports all wizards to main account
 def teleport_all():
     teleport("Elijah Ash")
     teleport("Elijah Bright")
     teleport("Elijah Caster")
 
 
+# Main battle loop function
 def battle():
     ahk.key_down('x')
     sleep(14)
