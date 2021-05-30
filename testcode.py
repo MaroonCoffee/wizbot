@@ -1,54 +1,35 @@
-from os import getpid
+from os import getppid
 from multiprocessing import Process
 import psutil
 from time import sleep
 
 
-def kill_tree(pid):
-    parent = psutil.Process(pid)
+def kill_tree(ppid):
+    parent = psutil.Process(ppid)
     for child in parent.children(recursive=True):
         child.kill()
 
 
-def remaining_time(current_time, delay):
-    sleep(delay)
-    print(current_time, "secs remain")
-
-
 def battle():
-    print("In 10 seconds, this program will explode lol")
-    x = 10
-    while x > 0:
-        remaining_time(x, 2)
-        x = x-2
-    print("Program has exploded!")
+    print("The second message in this function won't be able to run, as it will have ended before then")
+    sleep(5)
+    print("This text will not be displayed, as the function will have already terminated")
 
 
 def stop_battle():
-    while True:
-        print("Welcome to the anti program explody program. Type 1 to stop the explosion.")
-        usrinput = input("usr: ")
-        if usrinput == "1":
-            print("Killing process...")
-            pid = getpid()
-            kill_tree(pid)
-            print("Process killed!")
-            print("Waiting to see if anything happens...")
-            sleep(5)
-            print("Nope I think we're good!")
-            break
-        else:
-            print("Invalid command!")
-
-
-def main():
-    p1 = Process(target=battle(),)
-    p2 = Process(target=stop_battle(),)
-    p1.start()
-    p2.start()
+    sleep(1)
+    print("This text is from a separate function that will end itself and the previous function")
+    print("Killing processes...")
+    ppid = getppid()
+    kill_tree(ppid)
+    print("This text will not be displayed, as the function will have already terminated")
 
 
 if __name__ == "__main__":
-    print("Starting main")
-    main()
-    print("Stopping main")
+    p1 = Process(target=battle)
+    p2 = Process(target=stop_battle)
+    p1.start()
+    p2.start()
+    p1.join()
+    p2.join()
+    print("Both processes completed!")
