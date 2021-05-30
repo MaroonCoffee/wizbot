@@ -1,5 +1,6 @@
 from time import sleep
 from ahk import AHK
+import image_detection
 
 ahk = AHK()
 
@@ -58,5 +59,3 @@ def battle():
     auto_walk("Elijah Caster")
     sleep(6.5)
     # TODO: Detect cards on screen and click them
-    # TODO: Run battle function and exit function in parallel: https://bit.ly/3p6krwy
-    # TODO: Kill battle process when exit function is called
