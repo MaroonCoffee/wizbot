@@ -66,6 +66,7 @@ def relative_to_absolute_coords(name, x, y, client=True):
 
 # Used for testing. Coverts mouse position to relative coords to be hard programmed into the bot
 def mouse_to_relative_coords():
+    window_name = input("Enter the name of the window: ")
     win = get_window(window_name)
     win_coords = win.rect
     current_coords = ahk.mouse_position
