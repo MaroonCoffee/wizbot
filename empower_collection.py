@@ -1,8 +1,11 @@
 from time import sleep
 from ahk import AHK
+from sys import modules
 # import image_detection
 
 ahk = AHK()
+wizard_name_list = ["Elijah Ash", "Elijah Bright", "Elijah Caster"]
+full_wizard_name_list = ["Elijah Thunderflame", "Elijah Ash", "Elijah Bright", "Elijah Caster"]
 
 
 # Returns win when supplied window name. Win can be used for ahk functions involving a window
@@ -57,30 +60,87 @@ def get_abs_coords(name, relative_coords):
     return absolute_coords
 
 
-# Teleports wizard to main account
-def teleport(wizard):
+# Teleports wizard to main account. If wizard isn't specified, teleports all wizards.
+def teleport(wizard, delay=0):
     activate_window(wizard)
     coord_list = [(777, 48), (705, 122), (454, 114), (411, 394)]
     absolute_coords = get_abs_coords(wizard, coord_list)
     window_clicks(absolute_coords)
+    sleep(delay)
 
 
-# Teleports all wizards to main account
-def teleport_all():
-    teleport("Elijah Ash")
-    teleport("Elijah Bright")
-    teleport("Elijah Caster")
+# Quits a wizard to the title screen
+def wizard_quit(wizard, delay=0.5):
+    activate_window(wizard)
+    ahk.key_down('Escape')
+    coord_list = [(263, 508), (510, 383)]
+    absolute_coords = get_abs_coords(wizard, coord_list)
+    window_clicks(absolute_coords)
+    sleep(delay)
+
+
+# Joins a wizard from the title screen
+def wizard_join(wizard, delay=0.5):
+    activate_window(wizard)
+    coord_list = [(516, 396), (407, 599), (407, 599)]
+    absolute_coords = get_abs_coords(wizard, coord_list)
+    window_clicks(absolute_coords, 0.2)
+    sleep(delay)
+
+
+# Clears the delay shop popup after the title screen (optional)
+def clear_shop(wizard, delay=0.1):
+    activate_window(wizard)
+    sleep(200)
+    ahk.key_down('Escape')
+    sleep(200)
+    ahk.key_down('Escape')
+    sleep(delay)
+
+
+# Makes a wizard begin to spin to avoid being afk kicked
+def auto_spin(wizard, delay=0.2):
+    activate_window(wizard)
+    hold_key("d")
+    hold_key("Shift")
+    hold_key("d", False)
+    hold_key("Shift", False)
+    sleep(delay)
+
+
+# Used to call other functions to specify which wizards should receive the command
+def function_caller(func_name, name_list, delay, module="empower_collection"):
+    if type(name_list) == str:
+        name_list = [name_list]
+    for account in name_list:
+        app = modules[module]
+        func = getattr(app, func_name)
+        func(account, delay)
+
+
+# Quits out a wizard and then brings them back from the title screen
+def reset():
+    function_caller("wizard_quit", full_wizard_name_list, 0.5)
+    sleep(0.5)
+    function_caller("wizard_join", full_wizard_name_list, 0.5)
+    # sleep(0.5)
+    # function_caller("clear_shop", full_wizard_name_list, 0.2)
+
+
+# Passes the turn for a given wizard in battle
+def pass_all(name):
+    coord_list = [(258, 396)]
+    activate_window(name)
+    absolute_coords = get_abs_coords(name, coord_list)
+    window_clicks(absolute_coords)
 
 
 # Main battle loop function
 def battle():
     ahk.key_down('x')
     sleep(14)
-    teleport_all()
+    function_caller("teleport", wizard_name_list, 0)
     sleep(7)
-    auto_walk("Elijah Thunderflame")
-    auto_walk("Elijah Ash")
-    auto_walk("Elijah Bright")
-    auto_walk("Elijah Caster")
+    function_caller("auto_walk", full_wizard_name_list, 0)
     sleep(6.5)
     # TODO: Detect cards on screen and click them

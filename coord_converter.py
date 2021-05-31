@@ -1,7 +1,7 @@
 from time import sleep
 from ahk import AHK
 
-ahk = AHK()
+# ahk = AHK()
 
 
 # Returns win when supplied window name. Win can be used for ahk functions involving a window
@@ -69,7 +69,7 @@ def client_coords_converter(coord_list):
 
 
 def main():
-    coord_list = [[769, 17], [697, 91], [446, 83], [403, 363]]
+    coord_list = [[508, 365], [399, 568], [399, 568]]
     converted_coords = client_coords_converter(coord_list)
     print(converted_coords)
 
