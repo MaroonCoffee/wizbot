@@ -1,9 +1,11 @@
 from time import sleep
 from ahk import AHK
 from sys import modules
+from pynput.keyboard import Key, Controller
 # import image_detection
 
 ahk = AHK()
+keyboard = Controller()
 wizard_name_list = ["Elijah Ash", "Elijah Bright", "Elijah Caster"]
 full_wizard_name_list = ["Elijah Thunderflame", "Elijah Ash", "Elijah Bright", "Elijah Caster"]
 
@@ -22,13 +24,19 @@ def activate_window(name):
 
 
 # Holds down or brings up a key and then waits for a specified amount of time before continuing
-def hold_key(key, down=True, delay=0.02):
-    if down:
-        ahk.key_down(key)
-        sleep(delay)
+def hold_key(key, down=True, special=False, delay=0.02):
+    if special:
+        key_press = getattr(Key, key)
+        if down:
+            keyboard.press(key_press)
+        else:
+            keyboard.release(key_press)
     else:
-        ahk.key_up(key)
-        sleep(delay)
+        if down:
+            keyboard.press(key)
+        else:
+            keyboard.release(key)
+    sleep(delay)
 
 
 # Starts an auto walk for the wizard specified and then waits for a specified amount of time before continuing
@@ -36,9 +44,9 @@ def auto_walk(wizard, delay=0.1):
     activate_window(wizard)
     sleep(0.05)
     hold_key('w')
-    hold_key('Shift')
+    hold_key('shift', True, True)
     hold_key('w', False)
-    hold_key('Shift', False)
+    hold_key('shift', False, True)
     sleep(delay)
 
 
@@ -102,18 +110,16 @@ def clear_shop(wizard, delay=0.1):
 def auto_spin(wizard, delay=0.2):
     activate_window(wizard)
     hold_key("d")
-    hold_key("Shift")
+    hold_key("shift", True, True)
     hold_key("d", False)
-    hold_key("Shift", False)
+    hold_key("Shift", False, False)
     sleep(delay)
 
 
 # Used to call other functions to specify which wizards should receive the command
 def function_caller(func_name, name_list, delay, module="empower_collection"):
-    if type(name_list) == str:
-        name_list = [name_list]
+    app = modules[__name__]
     for account in name_list:
-        app = modules[module]
         func = getattr(app, func_name)
         func(account, delay)
 
@@ -137,10 +143,19 @@ def pass_all(name):
 
 # Main battle loop function
 def battle():
-    ahk.key_down('x')
+    activate_window("Elijah Thunderflame")
+    keyboard.press('x')
     sleep(14)
     function_caller("teleport", wizard_name_list, 0)
-    sleep(7)
+    sleep(4)
     function_caller("auto_walk", full_wizard_name_list, 0)
     sleep(6.5)
     # TODO: Detect cards on screen and click them
+
+
+def main():
+    pass
+
+
+if __name__ == "__main__":
+    main()
