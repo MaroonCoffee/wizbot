@@ -2,6 +2,7 @@ from time import sleep
 from ahk import AHK
 from sys import modules
 from pynput.keyboard import Key, Controller
+from multiprocessing import Process, Queue
 import pyautogui
 # import image_detection
 
@@ -85,6 +86,7 @@ def teleport(wizard, delay=0):
 def wizard_quit(wizard, delay=0.5):
     activate_window(wizard)
     ahk.key_down('Escape')
+    ahk.key_up('Escape')
     coord_list = [(263, 508), (510, 383)]
     absolute_coords = get_abs_coords(wizard, coord_list)
     window_clicks(absolute_coords)
@@ -105,8 +107,10 @@ def clear_shop(wizard, delay=0.1):
     activate_window(wizard)
     sleep(200)
     ahk.key_down('Escape')
+    ahk.key_up('Escape')
     sleep(200)
     ahk.key_down('Escape')
+    ahk.key_up('Escape')
     sleep(delay)
 
 
@@ -121,7 +125,7 @@ def auto_spin(wizard, delay=0.2):
 
 
 # Used to call other functions to specify which wizards should receive the command
-def function_caller(func_name, name_list, delay, module="empower_collection"):
+def function_caller(func_name, name_list, delay):
     app = modules[__name__]
     for account in name_list:
         func = getattr(app, func_name)
@@ -138,20 +142,24 @@ def reset():
 
 
 # Passes the turn for a given wizard in battle
-def pass_wizard(name):
+def pass_wizard(name, delay):
     activate_window(name)
     absolute_coords = get_abs_coords(name, (258, 396), True)
-    window_clicks(absolute_coords)
+    ahk.click(absolute_coords)
+    sleep(delay)
 
 
 # Returns the coords of a specified on screen image
 def get_image_coords(image, region):
     image_address = 'images/' + image + '.bmp'
     image_location = pyautogui.locateOnScreen(image_address, confidence=0.8, region=region)
+    if image_location is None:
+        return None
     image_coords = pyautogui.center(image_location)
     return image_coords.x, image_coords.y
 
 
+# Selects the correct cards in battle
 def card_handler():
     region_coords = get_abs_coords("Elijah Thunderflame", (380, 289), True)
     region = (region_coords[0], region_coords[1], 108, 79)
@@ -171,22 +179,70 @@ def card_handler():
     ahk.double_click(abs_card_coords[0], abs_card_coords[1])
 
 
+# Manages multiple processes that monitor the current battle state
+def battle_end_handler():
+    exit_channel = Queue()
+    p1 = Process(target=battle_completed_detector, args=(exit_channel,))
+    p2 = Process(target=failed_round_detector, args=(exit_channel,))
+    p1.start()
+    p2.start()
+    while True:
+        exit_code = exit_channel.get()
+        if exit_code != "":
+            break
+    p1.terminate()
+    p2.terminate()
+    exit_code_handler(exit_code)
+
+
+# Handles various exit codes
+def exit_code_handler(exit_code):
+    if exit_code == 100:
+        reset()
+        battle()
+
+
+# Checks to see if the player is still in battle
+def battle_completed_detector(exit_channel):
+    while True:
+        region_coords = get_abs_coords("Elijah Thunderflame", (110, 511), True)
+        region = (region_coords[0], region_coords[1], 54, 62)
+        piggle_coords = get_image_coords("piggle", region)
+        if piggle_coords is not None:
+            break
+    exit_channel.put(100)
+
+
+# Checks to see if a round has failed
+def failed_round_detector(exit_channel):
+    while True:
+        region_coords = get_abs_coords("Elijah Thunderflame", (201, 376), True)
+        region = (region_coords[0], region_coords[1], 100, 42)
+        pass_coords = get_image_coords("pass", region)
+        if pass_coords is not None:
+            break
+    exit_channel.put(100)
+
+
 # Main battle loop function
 def battle():
     activate_window("Elijah Thunderflame")
     keyboard.press('x')
+    keyboard.release('x')
     sleep(14)
     function_caller("teleport", wizard_name_list, 0)
     sleep(4)
     function_caller("auto_walk", full_wizard_name_list, 0)
-    sleep(6.5)
+    sleep(6)
     card_handler()
     function_caller("pass_wizard", wizard_name_list, 0)
-    # TODO: Search for pet icon and pass button on main account
+    activate_window("Elijah Ash")
+    activate_window("Elijah Thunderflame")
+    battle_end_handler()
 
 
 def main():
-    pass
+    battle()
 
 
 if __name__ == "__main__":
