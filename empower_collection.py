@@ -2,6 +2,7 @@ from time import sleep
 from ahk import AHK
 from sys import modules
 from pynput.keyboard import Key, Controller
+import pyautogui
 # import image_detection
 
 ahk = AHK()
@@ -57,14 +58,17 @@ def window_clicks(coord_list, delay=0.1):
         sleep(delay)
 
 
-# Returns absolute coords when supplied win.rect and relative coords
-def get_abs_coords(name, relative_coords):
+# Returns absolute coords when supplied a window name and relative coords
+def get_abs_coords(name, relative_coords, single=False):
     win = get_window(name)
     win_coords = win.rect
-    absolute_coords = []
-    for coord in relative_coords:
-        absolute_coord = (coord[0] + win_coords[0], coord[1] + win_coords[1])
-        absolute_coords.append(absolute_coord)
+    if single:
+        absolute_coords = (relative_coords[0] + win_coords[0], relative_coords[1] + win_coords[1])
+    else:
+        absolute_coords = []
+        for coord in relative_coords:
+            absolute_coord = (coord[0] + win_coords[0], coord[1] + win_coords[1])
+            absolute_coords.append(absolute_coord)
     return absolute_coords
 
 
@@ -134,11 +138,37 @@ def reset():
 
 
 # Passes the turn for a given wizard in battle
-def pass_all(name):
-    coord_list = [(258, 396)]
+def pass_wizard(name):
     activate_window(name)
-    absolute_coords = get_abs_coords(name, coord_list)
+    absolute_coords = get_abs_coords(name, (258, 396), True)
     window_clicks(absolute_coords)
+
+
+# Returns the coords of a specified on screen image
+def get_image_coords(image, region):
+    image_address = 'images/' + image + '.bmp'
+    image_location = pyautogui.locateOnScreen(image_address, confidence=0.8, region=region)
+    image_coords = pyautogui.center(image_location)
+    return image_coords.x, image_coords.y
+
+
+def card_handler():
+    region_coords = get_abs_coords("Elijah Thunderflame", (380, 289), True)
+    region = (region_coords[0], region_coords[1], 108, 79)
+    activate_window("Elijah Thunderflame")
+    abs_escape_coords = get_abs_coords("Elijah Thunderflame", (98, 104), True)
+    ahk.mouse_move(abs_escape_coords[0], abs_escape_coords[1])
+    fist_coords = get_image_coords("fist", region)
+    abs_fist_coords = get_abs_coords("Elijah Thunderflame", fist_coords, True)
+    ahk.mouse_move(abs_fist_coords[0], abs_escape_coords[1])
+    ahk.click(abs_fist_coords[0], abs_fist_coords[1])
+    ahk.mouse_move(abs_escape_coords[0], abs_escape_coords[1])
+    meteor_coords = get_image_coords("meteor", region)
+    abs_meteor_coords = get_abs_coords("Elijah Thunderflame", meteor_coords, True)
+    ahk.mouse_move(abs_meteor_coords[0], abs_escape_coords[1])
+    ahk.click(abs_meteor_coords[0], abs_meteor_coords[1])
+    abs_card_coords = get_abs_coords("Elijah Thunderflame", (430, 319), True)
+    ahk.double_click(abs_card_coords[0], abs_card_coords[1])
 
 
 # Main battle loop function
@@ -150,7 +180,9 @@ def battle():
     sleep(4)
     function_caller("auto_walk", full_wizard_name_list, 0)
     sleep(6.5)
-    # TODO: Detect cards on screen and click them
+    card_handler()
+    function_caller("pass_wizard", wizard_name_list, 0)
+    # TODO: Search for pet icon and pass button on main account
 
 
 def main():

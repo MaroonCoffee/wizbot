@@ -69,7 +69,7 @@ def client_coords_converter(coord_list):
 
 
 def main():
-    coord_list = [[508, 365], [399, 568], [399, 568]]
+    coord_list = [[372, 258], [480, 337], [399, 568]]
     converted_coords = client_coords_converter(coord_list)
     print(converted_coords)
 

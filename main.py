@@ -19,7 +19,7 @@ def battle_loop():
 
 
 def main():
-    pass
+    empower_collection.card_handler()
 
 
 if __name__ == "__main__":
