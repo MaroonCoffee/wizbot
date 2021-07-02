@@ -150,9 +150,9 @@ def pass_wizard(name, delay):
 
 
 # Returns the coords of a specified on screen image
-def get_image_coords(image, region):
+def get_image_coords(image, region, confidence=0.8):
     image_address = 'images/' + image + '.bmp'
-    image_location = pyautogui.locateOnScreen(image_address, confidence=0.8, region=region)
+    image_location = pyautogui.locateOnScreen(image_address, confidence=confidence, region=region)
     if image_location is None:
         return None
     image_coords = pyautogui.center(image_location)
@@ -239,6 +239,99 @@ def battle():
     activate_window("Elijah Ash")
     activate_window("Elijah Thunderflame")
     battle_end_handler()
+
+
+def bazaar():
+    pass
+
+
+def initiate_bazaar(wizard):
+    activate_window(wizard)
+    ahk.key_down('Escape')
+    ahk.key_up('Escape')
+    sleep(0.2)
+    coord_list = [(448, 209), (446, 248), (530, 508)]
+    window_clicks(coord_list, 0.2)
+    ahk.key_down('x')
+    ahk.key_up('x')
+    sleep(0.5)
+    absolute_coords = get_abs_coords(wizard, (666, 174), True)
+    ahk.click(absolute_coords)
+    item_sell(wizard)
+
+
+def item_sell(wizard):
+    category = 1
+    page = 1
+    while True:
+        row = 1
+        absolute_coords = get_abs_coords(wizard, (1069, 371), True)
+        ahk.click(absolute_coords)
+        while row < 8:
+            if sellable(wizard):
+                coord_list = [(682, 749), (1150, 637), (966, 656)]
+                absolute_coords = get_abs_coords(wizard, coord_list)
+                window_clicks(absolute_coords)
+                sleep(0.8)
+            else:
+                row += 1
+                row_coord = 308 + (63 * row)
+                absolute_coords = get_abs_coords(wizard, (1069, row_coord), True)
+                ahk.click(absolute_coords)
+        category += 1
+        if category == 8 and page == 1:
+            category = 9
+            next_page(wizard)
+            page = 2
+        if category == 10 and page == 2:
+            category = 1
+            next_page(wizard)
+            page = 3
+            if not section_sellable(wizard, (423, 221), (97, 89), "fire"):
+                category = 2
+        if category == 2 and page == 3:
+            if not section_sellable(wizard, (525, 222), (103, 91), "ice", 0.9):
+                category = 3
+        if category == 3 and page == 3:
+            category = 7
+        if category == 7 and page == 3:
+            if not section_sellable(wizard, (1063, 219), (107, 94), "balance"):
+                category = 8
+        if category == 8 and page == 3:
+            if not section_sellable(wizard, (1174, 222), (104, 92), "astral"):
+                category = 9
+        if category == 9 and page == 3:
+            break
+        category_coord = 360 + (108 * category)
+        absolute_coords = get_abs_coords(wizard, (category_coord, 268), True)
+        ahk.click(absolute_coords)
+
+
+def section_sellable(wizard, coords, dimensions, image, confidence=0.8):
+    absolute_coords = get_abs_coords(wizard, (890, 615), True)
+    ahk.click(absolute_coords)
+    region_coords = get_abs_coords(wizard, coords, True)
+    region = (region_coords[0], region_coords[1], dimensions[0], dimensions[1])
+    image_gray = get_image_coords(image, region, confidence)
+    if image_gray is None:
+        return True
+    else:
+        return False
+
+
+def next_page(wizard):
+    absolute_coords = get_abs_coords(wizard, (1428, 299), True)
+    ahk.click(absolute_coords)
+
+
+def sellable(wizard):
+    region_coords = get_abs_coords(wizard, (566, 714), True)
+    region = (region_coords[0], region_coords[1], 232, 63)
+    image_coords = get_image_coords("sell", region)
+    if image_coords is None:
+        return True
+    else:
+        return False
 
 
 def main():

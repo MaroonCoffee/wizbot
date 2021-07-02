@@ -68,11 +68,31 @@ def client_coords_converter(coord_list):
     return output_list
 
 
+def get_region():
+    window_name = input("Enter the name of the window: ")
+    win = get_window(window_name)
+    win_coords = win.rect
+    print("Collecting coords in 3 seconds")
+    sleep(3)
+    current_coords = ahk.mouse_position
+    relative_coords_1 = (current_coords[0] - win_coords[0], current_coords[1] - win_coords[1])
+    print(relative_coords_1)
+    print("Collecting other coords in 5 seconds")
+    sleep(5)
+    current_coords = ahk.mouse_position
+    relative_coords_2 = (current_coords[0] - win_coords[0], current_coords[1] - win_coords[1])
+    region_coord_1 = (relative_coords_2[0] - relative_coords_1[0])
+    region_coord_2 = (relative_coords_2[1] - relative_coords_1[1])
+    print('region_coords = get_abs_coords(wizard, ', relative_coords_1, ', True)', sep='')
+    print('region = (region_coords[0], region_coords[1], ', region_coord_1, ', ', region_coord_2, ')', sep='')
+
+
 def main():
-    # coord_list = [[372, 258], [480, 337], [399, 568]]
+    # coord_list = [[1096, 250], [1135, 284], [966, 656]]
     # converted_coords = client_coords_converter(coord_list)
     # print(converted_coords)
     mouse_to_relative_coords()
+    # get_region()
 
 
 if __name__ == "__main__":
