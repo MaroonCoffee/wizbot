@@ -1,9 +1,14 @@
 from time import sleep
+
+import PIL
 from ahk import AHK
 from sys import modules
 from pynput.keyboard import Key, Controller
 from multiprocessing import Process, Queue
 import pyautogui
+import pytesseract
+import re
+from PIL import ImageGrab
 # import image_detection
 
 ahk = AHK()
@@ -150,7 +155,9 @@ def pass_wizard(name, delay):
 
 
 # Returns the coords of a specified on screen image
-def get_image_coords(image, region, confidence=0.8):
+def get_image_coords(image, wizard, region_coords, dimensions, confidence=0.8):
+    region_coords = get_abs_coords(wizard, region_coords, True)
+    region = (region_coords[0], region_coords[1], dimensions[0], dimensions[1])
     image_address = 'images/' + image + '.bmp'
     image_location = pyautogui.locateOnScreen(image_address, confidence=confidence, region=region)
     if image_location is None:
@@ -161,17 +168,15 @@ def get_image_coords(image, region, confidence=0.8):
 
 # Selects the correct cards in battle
 def card_handler():
-    region_coords = get_abs_coords("Elijah Thunderflame", (380, 289), True)
-    region = (region_coords[0], region_coords[1], 108, 79)
     activate_window("Elijah Thunderflame")
     abs_escape_coords = get_abs_coords("Elijah Thunderflame", (98, 104), True)
     ahk.mouse_move(abs_escape_coords[0], abs_escape_coords[1])
-    fist_coords = get_image_coords("fist", region)
+    fist_coords = get_image_coords("fist", "Elijah Thunderflame", (380, 289), (108, 79))
     abs_fist_coords = get_abs_coords("Elijah Thunderflame", fist_coords, True)
     ahk.mouse_move(abs_fist_coords[0], abs_escape_coords[1])
     ahk.click(abs_fist_coords[0], abs_fist_coords[1])
     ahk.mouse_move(abs_escape_coords[0], abs_escape_coords[1])
-    meteor_coords = get_image_coords("meteor", region)
+    meteor_coords = get_image_coords("meteor", "Elijah Thunderflame", (380, 289), (108, 79))
     abs_meteor_coords = get_abs_coords("Elijah Thunderflame", meteor_coords, True)
     ahk.mouse_move(abs_meteor_coords[0], abs_escape_coords[1])
     ahk.click(abs_meteor_coords[0], abs_meteor_coords[1])
@@ -205,9 +210,7 @@ def exit_code_handler(exit_code):
 # Checks to see if the player is still in battle
 def battle_completed_detector(exit_channel):
     while True:
-        region_coords = get_abs_coords("Elijah Thunderflame", (110, 511), True)
-        region = (region_coords[0], region_coords[1], 54, 62)
-        piggle_coords = get_image_coords("piggle", region)
+        piggle_coords = get_image_coords("piggle", "Elijah Thunderflame", (110, 511), (54, 62))
         if piggle_coords is not None:
             break
     exit_channel.put(100)
@@ -216,9 +219,7 @@ def battle_completed_detector(exit_channel):
 # Checks to see if a round has failed
 def failed_round_detector(exit_channel):
     while True:
-        region_coords = get_abs_coords("Elijah Thunderflame", (201, 376), True)
-        region = (region_coords[0], region_coords[1], 100, 42)
-        pass_coords = get_image_coords("pass", region)
+        pass_coords = get_image_coords("pass", "Elijah Thunderflame", (201, 376), (100, 42))
         if pass_coords is not None:
             break
     exit_channel.put(100)
@@ -241,10 +242,12 @@ def battle():
     battle_end_handler()
 
 
+# Main bazaar function
 def bazaar():
     pass
 
 
+# Sets up an account to start the selling/buying process
 def initiate_bazaar(wizard):
     activate_window(wizard)
     ahk.key_down('Escape')
@@ -255,37 +258,35 @@ def initiate_bazaar(wizard):
     ahk.key_down('x')
     ahk.key_up('x')
     sleep(0.5)
-    absolute_coords = get_abs_coords(wizard, (666, 174), True)
-    ahk.click(absolute_coords)
+    ahk.click(666, 174)
     item_sell(wizard)
 
 
+# Sells all of a given wizard's items
 def item_sell(wizard):
     category = 1
     page = 1
     while True:
         row = 1
-        absolute_coords = get_abs_coords(wizard, (1069, 371), True)
-        ahk.click(absolute_coords)
+        ahk.click(1069, 371)
         while row < 8:
-            if sellable(wizard):
+            sellable = get_image_coords("sell", wizard, (566, 714), (232, 63), confidence=0.8)
+            if sellable is None:
                 coord_list = [(682, 749), (1150, 637), (966, 656)]
-                absolute_coords = get_abs_coords(wizard, coord_list)
-                window_clicks(absolute_coords)
+                window_clicks(coord_list)
                 sleep(0.8)
             else:
                 row += 1
                 row_coord = 308 + (63 * row)
-                absolute_coords = get_abs_coords(wizard, (1069, row_coord), True)
-                ahk.click(absolute_coords)
+                ahk.click(1069, row_coord)
         category += 1
         if category == 8 and page == 1:
             category = 9
-            next_page(wizard)
+            ahk.click(1428, 299)
             page = 2
         if category == 10 and page == 2:
             category = 1
-            next_page(wizard)
+            ahk.click(1428, 299)
             page = 3
             if not section_sellable(wizard, (423, 221), (97, 89), "fire"):
                 category = 2
@@ -303,35 +304,92 @@ def item_sell(wizard):
         if category == 9 and page == 3:
             break
         category_coord = 360 + (108 * category)
-        absolute_coords = get_abs_coords(wizard, (category_coord, 268), True)
-        ahk.click(absolute_coords)
+        ahk.click(category_coord, 268)
+    empower_buy(wizard)
 
 
+# Checks to see if a given section is sellable (not gray)
 def section_sellable(wizard, coords, dimensions, image, confidence=0.8):
-    absolute_coords = get_abs_coords(wizard, (890, 615), True)
-    ahk.click(absolute_coords)
-    region_coords = get_abs_coords(wizard, coords, True)
-    region = (region_coords[0], region_coords[1], dimensions[0], dimensions[1])
-    image_gray = get_image_coords(image, region, confidence)
+    ahk.click(890, 615)
+    image_gray = get_image_coords(image, wizard, coords, dimensions, confidence)
     if image_gray is None:
         return True
     else:
         return False
 
 
-def next_page(wizard):
-    absolute_coords = get_abs_coords(wizard, (1428, 299), True)
-    ahk.click(absolute_coords)
+# Refreshes the Bazaar waiting for empowers to be sold
+def empower_buy(wizard):
+    stop_buying = False
+    while True:
+        ahk.click(1104, 827)
+        ahk.click(1008, 272)
+        sleep(0.75)
+        ahk.click(1149, 657)
+        sleep(0.75)
+        ahk.double_click(1421, 344)
+        empower = get_image_coords("empower", wizard, (840, 346), (332, 214))
+        if empower is not None:
+            stop_buying = buy_empower(wizard, 379)
+        else:
+            empower = get_image_coords("empower2", wizard, (840, 394), (332, 214))
+            if empower is not None:
+                stop_buying = buy_empower(wizard, 420, False, (859, 426))
+        if stop_buying:
+            break
 
 
-def sellable(wizard):
-    region_coords = get_abs_coords(wizard, (566, 714), True)
-    region = (region_coords[0], region_coords[1], 232, 63)
-    image_coords = get_image_coords("sell", region)
-    if image_coords is None:
-        return True
+# Checks to see if there are more than 9 empowers, and if so, buys until there are only 9 left
+def buy_empower(wizard, y, first_row=True, empower_coords=(0, 0)):
+    emp_price_string = (read_text((1415, y, 1485, y+26)))
+    if string_has_numbers(emp_price_string):
+        emp_price = string_to_int(emp_price_string)
     else:
-        return False
+        return
+    if emp_price < 5400:
+        buyable = get_image_coords('buy', wizard, (476, 771), (237, 60))
+        if buyable is not None:
+            return True
+        emp_count_string = (read_text((1170, y, 1230, y+21)))
+        if string_has_numbers(emp_count_string):
+            emp_count = string_to_int(emp_count_string)
+        else:
+            return
+        buy_amount = emp_count - 9
+        if not first_row:
+            ahk.click(empower_coords)
+        ahk.click(590, 849)
+        ahk.double_click(792, 633)
+        ahk.key_down('Backspace')
+        ahk.key_up('Backspace')
+        ahk.type(str(buy_amount))
+        ahk.click(815, 832)
+        ahk.click(1149, 657)
+
+
+# Returns an integer when supplied a string that may include nonnumerical characters
+def string_to_int(string):
+    numeric_string = re.sub("[^0-9]", "", string)
+    integer = int(numeric_string)
+    return integer
+
+
+# Checks to see if there are any numerical characters in a supplied string
+def string_has_numbers(string):
+    contains_digit = False
+    for character in string:
+        if character.isdigit():
+            contains_digit = True
+    return contains_digit
+
+
+# Reads on screen text and returns it when supplied a bounding box
+def read_text(bbox):
+    pytesseract.pytesseract.tesseract_cmd = r'bin\Tesseract-OCR\tesseract.exe'
+    screen_cap = PIL.ImageGrab.grab(bbox=bbox)
+    # screen_cap.save('temp.png')
+    text = pytesseract.image_to_string(screen_cap, lang='eng', config='myconfig.txt')
+    return text
 
 
 def main():
