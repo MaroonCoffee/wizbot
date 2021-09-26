@@ -90,18 +90,18 @@ def get_region():
 
 
 def main():
-    # coord_list = [[1096, 250], [1135, 284], [966, 656]]
+    # coord_list = [[234, 520], [266, 547], [966, 656]]
     # converted_coords = client_coords_converter(coord_list)
     # print(converted_coords)
-    # mouse_to_relative_coords()
+    mouse_to_relative_coords()
     # get_region()
-    print("Saving first coords...")
-    sleep(3)
-    first_coords = pyautogui.position()
-    print("Saving second coords...")
-    sleep(3)
-    second_coords = pyautogui.position()
-    print(first_coords[0], first_coords[1], second_coords[0], second_coords[1])
+    # print("Saving first coords...")
+    # sleep(3)
+    # first_coords = pyautogui.position()
+    # print("Saving second coords...")
+    # sleep(3)
+    # second_coords = pyautogui.position()
+    # print(first_coords[0], first_coords[1], second_coords[0], second_coords[1])
 
 
 if __name__ == "__main__":

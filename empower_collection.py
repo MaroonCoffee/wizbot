@@ -11,6 +11,12 @@ import re
 from PIL import ImageGrab
 # import image_detection
 
+# TODO: Just finished code to scan backpacks after a battle, haven't tested but should work just fine
+# TODO: Next up is getting the main wizard to the Bazaar and teleporting all
+# TODO: After that, setup bazaar end handler to get each wizard nonmaximized for the next wiz
+# TODO: Finally, teleport all back and restart battle loop
+# TODO: After that, everything should be done, so you can start on crash detection!
+
 ahk = AHK()
 keyboard = Controller()
 wizard_name_list = ["Elijah Ash", "Elijah Bright", "Elijah Caster"]
@@ -204,7 +210,15 @@ def battle_end_handler():
 def exit_code_handler(exit_code):
     if exit_code == 100:
         reset()
-        battle()
+        backpack_full = False
+        for wizard in wizard_name_list:
+            backpack_full = backpack_check(wizard)
+            if backpack_full:
+                break
+        if backpack_full:
+            bazaar()
+        else:
+            battle()
 
 
 # Checks to see if the player is still in battle
@@ -332,9 +346,17 @@ def empower_buy(wizard):
         if empower is not None:
             stop_buying = buy_empower(wizard, 379)
         else:
-            empower = get_image_coords("empower2", wizard, (840, 394), (332, 214))
+            empower = get_image_coords("empower_red", wizard, (840, 346), (332, 214))
             if empower is not None:
-                stop_buying = buy_empower(wizard, 420, False, (859, 426))
+                stop_buying = buy_empower(wizard, 379, False, (859, 426))
+            else:
+                empower = get_image_coords("empower2", wizard, (840, 394), (332, 214))
+                if empower is not None:
+                    stop_buying = buy_empower(wizard, 420, False, (859, 426))
+                else:
+                    empower = get_image_coords("empower2_red", wizard, (840, 394), (332, 214))
+                    if empower is not None:
+                        stop_buying = buy_empower(wizard, 420, False, (859, 426))
         if stop_buying:
             break
 
@@ -390,6 +412,24 @@ def read_text(bbox):
     # screen_cap.save('temp.png')
     text = pytesseract.image_to_string(screen_cap, lang='eng', config='myconfig.txt')
     return text
+
+
+def backpack_check(wizard):
+    backpack_full = False
+    activate_window(wizard)
+    ahk.key_down('b')
+    ahk.key_up('b')
+    for num in range(75, 81):
+        converted_num = str(num)
+        backpack_num = get_image_coords(converted_num, wizard, (219, 509), (361, 562), confidence=0.95)
+        if backpack_num is not None:
+            backpack_full = True
+    ahk.key_down('Escape')
+    ahk.key_up('Escape')
+    if backpack_full:
+        return True
+    else:
+        return False
 
 
 def main():
