@@ -9,13 +9,10 @@ import pyautogui
 import pytesseract
 import re
 from PIL import ImageGrab
-# import image_detection
 
-# TODO: Just finished code to scan backpacks after a battle, haven't tested but should work just fine
-# TODO: Next up is getting the main wizard to the Bazaar and teleporting all
-# TODO: After that, setup bazaar end handler to get each wizard nonmaximized for the next wiz
-# TODO: Finally, teleport all back and restart battle loop
-# TODO: After that, everything should be done, so you can start on crash detection!
+# TODO: Add decent shop clear function
+# TODO: Create sanity checks throughout program
+# TODO: Add full restart function
 
 ahk = AHK()
 keyboard = Controller()
@@ -99,8 +96,7 @@ def teleport(wizard, delay=0, waypoint=False):
 # Quits a wizard to the title screen
 def wizard_quit(wizard, delay=0.5):
     activate_window(wizard)
-    ahk.key_down('Escape')
-    ahk.key_up('Escape')
+    ahk_key_press('Escape')
     coord_list = [(263, 508), (510, 383)]
     absolute_coords = get_abs_coords(wizard, coord_list)
     window_clicks(absolute_coords)
@@ -119,22 +115,19 @@ def wizard_join(wizard, delay=0.5):
 # Clears the delay shop popup after the title screen (optional)
 def clear_shop(wizard, delay=0.1):
     activate_window(wizard)
-    sleep(200)
-    ahk.key_down('Escape')
-    ahk.key_up('Escape')
-    sleep(200)
-    ahk.key_down('Escape')
-    ahk.key_up('Escape')
+    sleep(0.2)
+    ahk_key_press('Escape', 0, 0.2)
+    ahk_key_press('Escape')
     sleep(delay)
 
 
 # Makes a wizard begin to spin to avoid being afk kicked
 def auto_spin(wizard, delay=0.2):
     activate_window(wizard)
-    hold_key("d")
-    hold_key("shift", True, True)
-    hold_key("d", False)
-    hold_key("Shift", False, False)
+    hold_key('d')
+    hold_key('shift', True, True)
+    hold_key('d', False)
+    hold_key('shift', False, True)
     sleep(delay)
 
 
@@ -209,6 +202,7 @@ def battle_end_handler():
     exit_code_handler(exit_code)
 
 
+# Manages multiple processes that determine whether to fight or to enter the bazaar
 def battle_enter_handler():
     exit_channel = Queue()
     p1 = Process(target=battle_init, args=(exit_channel,))
@@ -224,6 +218,7 @@ def battle_enter_handler():
     exit_code_handler(exit_code)
 
 
+# Begins the battle process, but can be cancelled if selling is necessary
 def battle_init(exit_channel):
     activate_window("Elijah Thunderflame")
     keyboard.press('x')
@@ -235,9 +230,7 @@ def battle_init(exit_channel):
 # Handles various exit codes
 def exit_code_handler(exit_code):
     if exit_code == 100:
-        ahk.key_down('w')
-        sleep(2)
-        ahk.key_up('w')
+        ahk_key_press('w', 2)
         teleport("Elijah Thunderflame", 0, True)
         sleep(4)
         battle_enter_handler()
@@ -286,26 +279,56 @@ def battle(in_dungeon=False):
     battle_end_handler()
 
 
+# Presses a given key down for a given amount of time and then waits a given amount of time
+def ahk_key_press(key, duration=0.0, delay=0.02):
+    ahk.key_down(key)
+    sleep(duration)
+    ahk.key_up(key)
+    sleep(delay)
+
+
 # Main bazaar function
 def bazaar():
     activate_window("Elijah Thunderflame")
-    ahk.key_down('w')
-    ahk.key_up('w')
+    ahk_key_press('w')
+    home_coords = get_abs_coords("Elijah Thunderflame", (649, 582), True)
+    ahk.click(home_coords)
+    sleep(7)
+    ahk_key_press('d', 0.4, 0.2)
+    ahk_key_press('w', 1.5)
+    ahk_key_press('x', 0, 5)
+    ahk_key_press('w', 0.6)
+    function_caller("teleport", wizard_name_list, 0)
+    sleep(6)
+    function_caller("auto_spin", full_wizard_name_list, 0)
+    function_caller("initiate_bazaar", full_wizard_name_list, 1)
+    teleport("Elijah Thunderflame", 0, True)
+    teleport("Elijah Ash", 0, True)
+    teleport("Elijah Bright", 0, True)
+    teleport("Elijah Caster", 0, True)
+    battle()
 
 
 # Sets up an account to start the selling/buying process
-def initiate_bazaar(wizard):
+def initiate_bazaar(wizard, delay):
     activate_window(wizard)
-    ahk.key_down('Escape')
-    ahk.key_up('Escape')
-    sleep(0.2)
+    ahk_key_press('Escape', 0, 0.2)
     coord_list = [(448, 209), (446, 248), (530, 508)]
-    window_clicks(coord_list, 0.2)
-    ahk.key_down('x')
-    ahk.key_up('x')
+    absolute_coords = get_abs_coords(wizard, coord_list)
+    window_clicks(absolute_coords)
+    ahk_key_press('x')
     sleep(0.5)
     ahk.click(666, 174)
     item_sell(wizard)
+    ahk.click(1456, 897)
+    sleep(0.5)
+    ahk_key_press('Escape', 0, 0.6)
+    ahk.click(1317, 397)
+    ahk.click(1317, 327)
+    ahk.click(1174, 852)
+    sleep(0.5)
+    auto_spin(wizard)
+    sleep(delay)
 
 
 # Sells all of a given wizard's items
@@ -314,17 +337,17 @@ def item_sell(wizard):
     page = 1
     while True:
         row = 1
-        ahk.click(1069, 371)
+        ahk.double_click(1069, 371)
         while row < 8:
             sellable = get_image_coords("sell", wizard, (566, 714), (232, 63), confidence=0.8)
             if sellable is None:
-                coord_list = [(682, 749), (1150, 637), (966, 656)]
-                window_clicks(coord_list)
-                sleep(0.8)
+                ahk.double_click(682, 749)
+                ahk.click(1150, 637)
+                ahk.click(966, 656)
             else:
                 row += 1
                 row_coord = 308 + (63 * row)
-                ahk.click(1069, row_coord)
+                ahk.double_click(1069, row_coord)
         category += 1
         if category == 8 and page == 1:
             category = 9
@@ -351,6 +374,7 @@ def item_sell(wizard):
             break
         category_coord = 360 + (108 * category)
         ahk.click(category_coord, 268)
+    ahk.double_click(501, 141)
     empower_buy(wizard)
 
 
@@ -368,27 +392,36 @@ def section_sellable(wizard, coords, dimensions, image, confidence=0.8):
 def empower_buy(wizard):
     stop_buying = False
     while True:
+        ahk.click(501, 141)
         ahk.click(1104, 827)
         ahk.click(1008, 272)
         sleep(0.75)
         ahk.click(1149, 657)
         sleep(0.75)
         ahk.double_click(1421, 344)
-        empower = get_image_coords("empower", wizard, (840, 346), (332, 214))
+        empower = get_image_coords("empower", wizard, (840, 360), (332, 65), confidence=0.95)
         if empower is not None:
             stop_buying = buy_empower(wizard, 379)
         else:
-            empower = get_image_coords("empower_red", wizard, (840, 346), (332, 214))
+            empower = get_image_coords("empower_red", wizard, (840, 360), (332, 65), confidence=0.95)
             if empower is not None:
-                stop_buying = buy_empower(wizard, 379, False, (859, 426))
+                stop_buying = buy_empower(wizard, 379)
             else:
-                empower = get_image_coords("empower2", wizard, (840, 394), (332, 214))
+                empower = get_image_coords("empower2", wizard, (840, 400), (332, 65), confidence=0.95)
                 if empower is not None:
                     stop_buying = buy_empower(wizard, 420, False, (859, 426))
                 else:
-                    empower = get_image_coords("empower2_red", wizard, (840, 394), (332, 214))
+                    empower = get_image_coords("empower2_red", wizard, (840, 400), (332, 65), confidence=0.95)
                     if empower is not None:
                         stop_buying = buy_empower(wizard, 420, False, (859, 426))
+                    else:
+                        empower = get_image_coords("empower2", wizard, (840, 440), (332, 65), confidence=0.95)
+                        if empower is not None:
+                            stop_buying = buy_empower(wizard, 460, False, (859, 467))
+                        else:
+                            empower = get_image_coords("empower2_red", wizard, (840, 440), (332, 65), confidence=0.95)
+                            if empower is not None:
+                                stop_buying = buy_empower(wizard, 460, False, (859, 467))
         if stop_buying:
             break
 
@@ -414,8 +447,7 @@ def buy_empower(wizard, y, first_row=True, empower_coords=(0, 0)):
             ahk.click(empower_coords)
         ahk.click(590, 849)
         ahk.double_click(792, 633)
-        ahk.key_down('Backspace')
-        ahk.key_up('Backspace')
+        ahk_key_press('Backspace')
         ahk.type(str(buy_amount))
         ahk.click(815, 832)
         ahk.click(1149, 657)
@@ -446,6 +478,7 @@ def read_text(bbox):
     return text
 
 
+# Checks all 3 of the minion accounts for full backpacks
 def backpack_check_all(exit_channel):
     sleep(1)
     for wizard in wizard_name_list:
@@ -454,27 +487,28 @@ def backpack_check_all(exit_channel):
             exit_channel.put(201)
 
 
+# Checks a given wizard's backpack to see if their backpack is full
 def backpack_check(wizard):
     backpack_full = False
     activate_window(wizard)
-    ahk.key_down('b')
-    ahk.key_up('b')
+    ahk_key_press('b')
     for num in range(75, 81):
         converted_num = str(num)
         backpack_num = get_image_coords(converted_num, wizard, (219, 509), (361, 562), confidence=0.95)
         if backpack_num is not None:
             backpack_full = True
-    ahk.key_down('Escape')
-    ahk.key_up('Escape')
+    ahk_key_press('Escape')
     if backpack_full:
         return True
     else:
         return False
 
 
+# Main function
 def main():
     battle()
 
 
+# Runs main function
 if __name__ == "__main__":
     main()

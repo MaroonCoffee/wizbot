@@ -90,10 +90,10 @@ def get_region():
 
 
 def main():
-    # coord_list = [[234, 520], [266, 547], [966, 656]]
-    # converted_coords = client_coords_converter(coord_list)
-    # print(converted_coords)
-    mouse_to_relative_coords()
+    coord_list = [[440, 178], [438, 217], [522, 477]]
+    converted_coords = client_coords_converter(coord_list)
+    print(converted_coords)
+    # mouse_to_relative_coords()
     # get_region()
     # print("Saving first coords...")
     # sleep(3)
