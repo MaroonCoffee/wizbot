@@ -84,10 +84,13 @@ def get_abs_coords(name, relative_coords, single=False):
     return absolute_coords
 
 
-# Teleports wizard to main account. If wizard isn't specified, teleports all wizards.
-def teleport(wizard, delay=0):
+# Teleports wizard to main account or waypoint account.
+def teleport(wizard, delay=0, waypoint=False):
     activate_window(wizard)
-    coord_list = [(777, 48), (705, 122), (454, 114), (411, 394)]
+    if waypoint:
+        coord_list = [(777, 48), (705, 145), (454, 114), (411, 394), (781, 360)]
+    else:
+        coord_list = [(777, 48), (705, 122), (454, 114), (411, 394), (781, 360)]
     absolute_coords = get_abs_coords(wizard, coord_list)
     window_clicks(absolute_coords)
     sleep(delay)
@@ -206,19 +209,45 @@ def battle_end_handler():
     exit_code_handler(exit_code)
 
 
+def battle_enter_handler():
+    exit_channel = Queue()
+    p1 = Process(target=battle_init, args=(exit_channel,))
+    p2 = Process(target=backpack_check_all, args=(exit_channel,))
+    p1.start()
+    p2.start()
+    while True:
+        exit_code = exit_channel.get()
+        if exit_code != "":
+            break
+    p1.terminate()
+    p2.terminate()
+    exit_code_handler(exit_code)
+
+
+def battle_init(exit_channel):
+    activate_window("Elijah Thunderflame")
+    keyboard.press('x')
+    keyboard.release('x')
+    sleep(14)
+    exit_channel.put(200)
+
+
 # Handles various exit codes
 def exit_code_handler(exit_code):
     if exit_code == 100:
+        ahk.key_down('w')
+        sleep(2)
+        ahk.key_up('w')
+        teleport("Elijah Thunderflame", 0, True)
+        sleep(4)
+        battle_enter_handler()
+    if exit_code == 101:
         reset()
-        backpack_full = False
-        for wizard in wizard_name_list:
-            backpack_full = backpack_check(wizard)
-            if backpack_full:
-                break
-        if backpack_full:
-            bazaar()
-        else:
-            battle()
+        battle_enter_handler()
+    if exit_code == 200:
+        battle(True)
+    if exit_code == 201:
+        bazaar()
 
 
 # Checks to see if the player is still in battle
@@ -236,15 +265,16 @@ def failed_round_detector(exit_channel):
         pass_coords = get_image_coords("pass", "Elijah Thunderflame", (201, 376), (100, 42))
         if pass_coords is not None:
             break
-    exit_channel.put(100)
+    exit_channel.put(101)
 
 
 # Main battle loop function
-def battle():
-    activate_window("Elijah Thunderflame")
-    keyboard.press('x')
-    keyboard.release('x')
-    sleep(14)
+def battle(in_dungeon=False):
+    if not in_dungeon:
+        activate_window("Elijah Thunderflame")
+        keyboard.press('x')
+        keyboard.release('x')
+        sleep(14)
     function_caller("teleport", wizard_name_list, 0)
     sleep(4)
     function_caller("auto_walk", full_wizard_name_list, 0)
@@ -258,7 +288,9 @@ def battle():
 
 # Main bazaar function
 def bazaar():
-    pass
+    activate_window("Elijah Thunderflame")
+    ahk.key_down('w')
+    ahk.key_up('w')
 
 
 # Sets up an account to start the selling/buying process
@@ -412,6 +444,14 @@ def read_text(bbox):
     # screen_cap.save('temp.png')
     text = pytesseract.image_to_string(screen_cap, lang='eng', config='myconfig.txt')
     return text
+
+
+def backpack_check_all(exit_channel):
+    sleep(1)
+    for wizard in wizard_name_list:
+        check = backpack_check(wizard)
+        if check:
+            exit_channel.put(201)
 
 
 def backpack_check(wizard):
