@@ -1,3 +1,4 @@
+import datetime
 from time import sleep
 
 import PIL
@@ -11,6 +12,7 @@ import re
 from PIL import ImageGrab
 
 # TODO: Add decent shop clear function
+# TODO: Let bazaar sell more treasure cards to avoid overflow
 # TODO: Create sanity checks throughout program
 # TODO: Add full restart function
 
@@ -391,6 +393,7 @@ def section_sellable(wizard, coords, dimensions, image, confidence=0.8):
 # Refreshes the Bazaar waiting for empowers to be sold
 def empower_buy(wizard):
     stop_buying = False
+    empower_drought = 0
     while True:
         ahk.click(501, 141)
         ahk.click(1104, 827)
@@ -401,29 +404,50 @@ def empower_buy(wizard):
         ahk.double_click(1421, 344)
         empower = get_image_coords("empower", wizard, (840, 360), (332, 65), confidence=0.95)
         if empower is not None:
+            empower_drought = 0
             stop_buying = buy_empower(wizard, 379)
         else:
             empower = get_image_coords("empower_red", wizard, (840, 360), (332, 65), confidence=0.95)
             if empower is not None:
+                empower_drought = 0
                 stop_buying = buy_empower(wizard, 379)
             else:
                 empower = get_image_coords("empower2", wizard, (840, 400), (332, 65), confidence=0.95)
                 if empower is not None:
+                    empower_drought = 0
                     stop_buying = buy_empower(wizard, 420, False, (859, 426))
                 else:
                     empower = get_image_coords("empower2_red", wizard, (840, 400), (332, 65), confidence=0.95)
                     if empower is not None:
+                        empower_drought = 0
                         stop_buying = buy_empower(wizard, 420, False, (859, 426))
                     else:
                         empower = get_image_coords("empower2", wizard, (840, 440), (332, 65), confidence=0.95)
                         if empower is not None:
+                            ct = datetime.datetime.now()
+                            print(ct)
+                            empower_drought = 0
                             stop_buying = buy_empower(wizard, 460, False, (859, 467))
                         else:
                             empower = get_image_coords("empower2_red", wizard, (840, 440), (332, 65), confidence=0.95)
                             if empower is not None:
+                                ct = datetime.datetime.now()
+                                print(ct)
+                                empower_drought = 0
                                 stop_buying = buy_empower(wizard, 460, False, (859, 467))
+                            else:
+                                empower_drought += 1
         if stop_buying:
             break
+        if empower_drought >= 20:
+            ahk.click(1456, 897)
+            sleep(1.5)
+            ahk_key_press('x')
+            sleep(0.5)
+            ahk.click(1428, 299)
+            sleep(0.2)
+            ahk.click(1428, 299)
+            sleep(0.5)
 
 
 # Checks to see if there are more than 9 empowers, and if so, buys until there are only 9 left
