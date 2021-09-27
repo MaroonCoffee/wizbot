@@ -11,8 +11,7 @@ import pytesseract
 import re
 from PIL import ImageGrab
 
-# TODO: Add decent shop clear function
-# TODO: Let bazaar sell more treasure cards to avoid overflow
+# TODO: Let bazaar sell more treasure cards to avoid overflow (scan for empower card in death section to avoid selling)
 # TODO: Create sanity checks throughout program
 # TODO: Add full restart function
 
@@ -114,13 +113,14 @@ def wizard_join(wizard, delay=0.5):
     sleep(delay)
 
 
-# Clears the delay shop popup after the title screen (optional)
+# Clears the crown shop popup after the title screen if detected
 def clear_shop(wizard, delay=0.1):
     activate_window(wizard)
-    sleep(0.2)
-    ahk_key_press('Escape', 0, 0.2)
-    ahk_key_press('Escape')
-    sleep(delay)
+    crown_shop_open = get_image_coords("crownshop", wizard, (44, 143), (92, 83))
+    if crown_shop_open is not None:
+        ahk_key_press('Escape', 0, 0.2)
+        ahk_key_press('Escape')
+        sleep(delay)
 
 
 # Makes a wizard begin to spin to avoid being afk kicked
@@ -146,8 +146,8 @@ def reset():
     function_caller("wizard_quit", full_wizard_name_list, 0.5)
     sleep(0.5)
     function_caller("wizard_join", full_wizard_name_list, 0.5)
-    # sleep(0.5)
-    # function_caller("clear_shop", full_wizard_name_list, 0.2)
+    sleep(0.5)
+    function_caller("clear_shop", full_wizard_name_list, 0.2)
 
 
 # Passes the turn for a given wizard in battle
