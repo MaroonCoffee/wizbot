@@ -11,7 +11,7 @@ import pytesseract
 import re
 from PIL import ImageGrab
 
-# TODO: Let bazaar sell more treasure cards to avoid overflow (scan for empower card in death section to avoid selling)
+# TODO: Sell all seeds (White laugh o dil pile up)
 # TODO: Create sanity checks throughout program
 # TODO: Add full restart function
 
@@ -342,6 +342,10 @@ def item_sell(wizard):
         ahk.double_click(1069, 371)
         while row < 8:
             sellable = get_image_coords("sell", wizard, (566, 714), (232, 63), confidence=0.8)
+            if (category == 6) and (page == 3):
+                empower = get_image_coords("empower_card", wizard, (616, 435), (133, 109), confidence=0.8)
+                if empower is not None:
+                    sellable = 1
             if sellable is None:
                 ahk.double_click(682, 749)
                 ahk.click(1150, 637)
@@ -365,10 +369,14 @@ def item_sell(wizard):
             if not section_sellable(wizard, (525, 222), (103, 91), "ice", 0.9):
                 category = 3
         if category == 3 and page == 3:
-            category = 7
-        if category == 7 and page == 3:
-            if not section_sellable(wizard, (1063, 219), (107, 94), "balance"):
-                category = 8
+            if not section_sellable(wizard, (636, 220), (103, 91), "storm"):
+                category = 4
+        if category == 4 and page == 3:
+            if not section_sellable(wizard, (746, 223), (103, 91), "myth"):
+                category = 5
+        if category == 5 and page == 3:
+            if not section_sellable(wizard, (852, 223), (103, 91), "life"):
+                category = 6
         if category == 8 and page == 3:
             if not section_sellable(wizard, (1174, 222), (104, 92), "astral"):
                 category = 9
