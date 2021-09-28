@@ -456,6 +456,7 @@ def empower_buy(wizard):
             sleep(0.2)
             ahk.click(1428, 299)
             sleep(0.5)
+            empower_drought = 0
 
 
 # Checks to see if there are more than 9 empowers, and if so, buys until there are only 9 left
