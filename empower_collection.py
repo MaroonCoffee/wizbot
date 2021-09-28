@@ -342,7 +342,7 @@ def item_sell(wizard):
         ahk.double_click(1069, 371)
         while row < 8:
             sellable = get_image_coords("sell", wizard, (566, 714), (232, 63), confidence=0.8)
-            if (category == 6) and (page == 3):
+            if ((category == 6) or (category == 7) or (category == 8)) and (page == 3):
                 empower = get_image_coords("empower_card", wizard, (616, 435), (133, 109), confidence=0.8)
                 if empower is not None:
                     sellable = 1
@@ -556,9 +556,20 @@ def plant_sell(wizard, delay):
     sleep(delay)
 
 
+def temp_function():
+    function_caller("initiate_bazaar", wizard_name_list, 1)
+    function_caller("plant_sell", full_wizard_name_list, 0.5)
+    teleport("Elijah Thunderflame", 0, True)
+    teleport("Elijah Ash", 0, True)
+    teleport("Elijah Bright", 0, True)
+    teleport("Elijah Caster", 0, True)
+    battle()
+
+
 # Main function
 def main():
-    battle()
+    # battle()
+    temp_function()
 
 
 # Runs main function
