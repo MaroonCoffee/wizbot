@@ -1,6 +1,4 @@
-import datetime
 from time import sleep
-
 import PIL
 from ahk import AHK
 from sys import modules
@@ -432,15 +430,11 @@ def empower_buy(wizard):
                     else:
                         empower = get_image_coords("empower2", wizard, (840, 440), (332, 65), confidence=0.95)
                         if empower is not None:
-                            ct = datetime.datetime.now()
-                            print(ct)
                             empower_drought = 0
                             stop_buying = buy_empower(wizard, 460, False, (859, 467))
                         else:
                             empower = get_image_coords("empower2_red", wizard, (840, 440), (332, 65), confidence=0.95)
                             if empower is not None:
-                                ct = datetime.datetime.now()
-                                print(ct)
                                 empower_drought = 0
                                 stop_buying = buy_empower(wizard, 460, False, (859, 467))
                             else:
@@ -527,7 +521,7 @@ def backpack_check(wizard):
     ahk_key_press('b')
     for num in range(75, 81):
         converted_num = str(num)
-        backpack_num = get_image_coords(converted_num, wizard, (219, 509), (361, 562), confidence=0.95)
+        backpack_num = get_image_coords(converted_num, wizard, (219, 509), (361, 562), confidence=0.99)
         if backpack_num is not None:
             backpack_full = True
     ahk_key_press('Escape')
