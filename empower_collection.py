@@ -302,11 +302,9 @@ def bazaar():
     sleep(6)
     function_caller("auto_spin", full_wizard_name_list, 0)
     function_caller("initiate_bazaar", full_wizard_name_list, 1)
-    function_caller("plant_sell", full_wizard_name_list, 0.5)
-    teleport("Elijah Thunderflame", 0, True)
-    teleport("Elijah Ash", 0, True)
-    teleport("Elijah Bright", 0, True)
-    teleport("Elijah Caster", 0, True)
+    function_caller("extra_sell", full_wizard_name_list, 0.5)
+    function_caller("jewel_sell", full_wizard_name_list, 0.5)
+    function_caller("teleport_waypoint", full_wizard_name_list, 0)
     battle()
 
 
@@ -544,13 +542,19 @@ def backpack_check(wizard):
 
 
 # Sells all the plants in a given wizard's backpack to clear out plants not sold at bazaar
-def plant_sell(wizard, delay):
+def extra_sell(wizard, delay, plants=True):
     activate_window(wizard)
     ahk_key_press('b')
-    coord_list = [(159, 530), (679, 173), (520, 172), (416, 219), (232, 491), (394, 488)]
+    if plants:
+        coord_list = [(159, 530), (679, 173), (520, 172), (416, 219), (232, 491), (394, 488)]
+    else:
+        coord_list = [(159, 530), (679, 173), (679, 173), (416, 219), (232, 491), (394, 488)]
     absolute_coords = get_abs_coords(wizard, coord_list)
     window_clicks(absolute_coords, 0.5)
-    sleep(2.5)
+    if plants:
+        sleep(2.5)
+    else:
+        sleep(10)
     ahk_key_press('Escape')
     sleep(0.5)
     x_button = get_image_coords("x_button", wizard, (658, 506), (69, 50), confidence=0.95)
@@ -562,9 +566,28 @@ def plant_sell(wizard, delay):
     sleep(delay)
 
 
+def jewel_sell(wizard, delay):
+    extra_sell(wizard, delay, False)
+
+
+def teleport_waypoint(wizard, delay):
+    teleport(wizard, delay, True)
+
+
+def on_error():
+    reset()
+    function_caller("teleport_waypoint", full_wizard_name_list, 0)
+    sleep(3)
+
+
 # Main function
+# noinspection PyBroadException
 def main():
-    battle()
+    while True:
+        try:
+            battle()
+        except Exception as e:
+            on_error()
 
 
 # Runs main function
