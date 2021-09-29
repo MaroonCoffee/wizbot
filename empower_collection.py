@@ -87,6 +87,7 @@ def teleport(wizard, delay=0, waypoint=False):
     else:
         coord_list = [(777, 48), (705, 122), (454, 114), (411, 394), (781, 360)]
     absolute_coords = get_abs_coords(wizard, coord_list)
+    ahk_key_press('w')
     window_clicks(absolute_coords)
     sleep(delay)
 
@@ -336,6 +337,7 @@ def item_sell(wizard):
     category = 1
     page = 1
     while True:
+        sell_streak = 0
         row = 1
         ahk.double_click(1069, 371)
         while row < 8:
@@ -344,14 +346,24 @@ def item_sell(wizard):
                 empower = get_image_coords("empower_card", wizard, (616, 435), (133, 109), confidence=0.8)
                 if empower is not None:
                     sellable = 1
+                    sell_streak = 0
             if sellable is None:
                 ahk.double_click(682, 749)
                 ahk.click(1150, 637)
                 ahk.click(966, 656)
+                sell_streak += 1
             else:
                 row += 1
                 row_coord = 308 + (63 * row)
                 ahk.double_click(1069, row_coord)
+                sell_streak = 0
+            if sell_streak >= 30:
+                ahk.click(1456, 897)
+                sleep(1.5)
+                ahk_key_press('x')
+                sleep(0.5)
+                ahk.click(666, 174)
+                category, page, row, sell_streak = 1, 1, 1, 0
         category += 1
         if category == 8 and page == 1:
             category = 9
