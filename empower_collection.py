@@ -8,14 +8,22 @@ import pyautogui
 import pytesseract
 import re
 from PIL import ImageGrab
+import os
+import stdiomask
+from cryptography.fernet import Fernet
+import private
 
+# TODO: Scan for shop menu before starting shop process. If not found, re-enter bazaar.
 # TODO: Create sanity checks throughout program
 # TODO: Add full restart function
 
+
+password_list = []
 ahk = AHK()
 keyboard = Controller()
 wizard_name_list = ["Elijah Ash", "Elijah Bright", "Elijah Caster"]
 full_wizard_name_list = ["Elijah Thunderflame", "Elijah Ash", "Elijah Bright", "Elijah Caster"]
+filepath = 'E:\\Wizard101\\Wizard101.exe'
 
 
 # Returns win when supplied window name. Win can be used for ahk functions involving a window
@@ -566,27 +574,48 @@ def extra_sell(wizard, delay, plants=True):
     sleep(delay)
 
 
+# Sells all the jewels of a specified wizard and then waits a given amount of time
 def jewel_sell(wizard, delay):
     extra_sell(wizard, delay, False)
 
 
+# Teleports a given wizard to the waypoint wizard and then waits a given amount of time
 def teleport_waypoint(wizard, delay):
     teleport(wizard, delay, True)
 
 
+# When an error occurs, resets the position of all wizards back to default and then runs battle()
 def on_error():
     reset()
     function_caller("teleport_waypoint", full_wizard_name_list, 0)
     sleep(3)
 
 
+# Processes a given encryption key to unlock passwords from private.py
+# noinspection PyBroadException
+def password_processor():
+    while True:
+        try:
+            password = stdiomask.getpass("Please enter your password: ")
+            encoded_text = bytes(private.encrypted_password, 'utf-8')
+            cipher_suite = Fernet(password)
+            decoded_text = str(cipher_suite.decrypt(encoded_text))
+            converted_text = decoded_text[2:-1]
+            break
+        except Exception:
+            print("Invalid Password!")
+    global password_list
+    password_list = converted_text.split(" ")
+
+
 # Main function
 # noinspection PyBroadException
 def main():
+    password_processor()
     while True:
         try:
             battle()
-        except Exception as e:
+        except Exception:
             on_error()
 
 
