@@ -18,7 +18,8 @@ import private
 # TODO: Add full restart function
 
 
-password_list = []
+user_list = ["erose524", "erose526", "erose527", "erose528", "erose529"]
+user_dictionary = {}
 ahk = AHK()
 keyboard = Controller()
 wizard_name_list = ["Elijah Ash", "Elijah Bright", "Elijah Caster"]
@@ -604,8 +605,10 @@ def password_processor():
             break
         except Exception:
             print("Invalid Password!")
-    global password_list
     password_list = converted_text.split(" ")
+    global user_dictionary
+    for i in range(4):
+        user_dictionary[user_list[i]] = password_list[i]
 
 
 # Main function
