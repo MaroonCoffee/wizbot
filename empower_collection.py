@@ -13,13 +13,20 @@ import stdiomask
 from cryptography.fernet import Fernet
 import private
 
+
 # TODO: Scan for shop menu before starting shop process. If not found, re-enter bazaar.
 # TODO: Create sanity checks throughout program
 # TODO: Add full restart function
+# TODO: Close Google After closing all wizards
 
 
 user_list = ["erose524", "erose526", "erose527", "erose528", "erose529"]
 user_dictionary = {}
+name_dictionary = {"erose524": "Elijah Thunderflame",
+                   "erose526": "Elijah Ash",
+                   "erose527": "Elijah Bright",
+                   "erose528": "Elijah Caster",
+                   "erose529": "Elijah WindWhisper"}
 ahk = AHK()
 keyboard = Controller()
 wizard_name_list = ["Elijah Ash", "Elijah Bright", "Elijah Caster"]
@@ -607,8 +614,91 @@ def password_processor():
             print("Invalid Password!")
     password_list = converted_text.split(" ")
     global user_dictionary
-    for i in range(4):
+    for i in range(5):
         user_dictionary[user_list[i]] = password_list[i]
+
+
+def game_launcher(user, delay):
+    wizard = name_dictionary[user]
+    os.startfile(filepath)
+    while True:
+        try:
+            activate_window("Wizard101")
+            break
+        except AttributeError:
+            sleep(1)
+    while True:
+        login_button = get_image_coords("login_gray", "Wizard101", (616, 517), (159, 76))
+        if login_button is not None:
+            break
+        else:
+            sleep(1)
+    coord_list = [(205, 562), (400, 563), (698, 555), (734, 487)]
+    absolute_coords = get_abs_coords("Wizard101", coord_list)
+    ahk.click(absolute_coords[0])
+    ahk.type(user)
+    ahk.click(absolute_coords[1])
+    ahk.type(user_dictionary[user])
+    ahk.click(absolute_coords[2])
+    ahk.click(absolute_coords[3])
+    while True:
+        try:
+            play_button = get_image_coords("launcher_play", "Wizard101", (616, 517), (159, 76))
+            if play_button is not None:
+                break
+            else:
+                sleep(1)
+        except AttributeError:
+            sleep(1)
+    ahk.click(absolute_coords[2])
+    while True:
+        try:
+            activate_window("Wizard101")
+            break
+        except AttributeError:
+            sleep(1)
+    sleep(2)
+    activate_window("Wizard101")
+    window = ahk.get_active_window()
+    window.set_title(wizard)
+    coord_list = [(414, 322), (406, 602)]
+    absolute_coords = get_abs_coords(wizard, coord_list)
+    while True:
+        play_button = get_image_coords("menu_play", wizard, (304, 566), (192, 60))
+        if play_button is not None:
+            break
+        else:
+            ahk.click(absolute_coords[0])
+            sleep(0.5)
+    character_selector(wizard)
+    ahk.click(absolute_coords[1])
+    sleep(5)
+    clear_shop(wizard)
+    auto_spin(wizard)
+    sleep(delay)
+
+
+def character_selector(wizard):
+    character_found = False
+    character = None
+    if wizard == "Elijah Thunderflame":
+        character_image = "thunder"
+    elif wizard == "Elijah Ash":
+        character_image = "ash"
+    else:
+        character_found = True
+        character_image = "none"
+    if not character_found:
+        while character is None:
+            coord_list = [(57, 334), (164, 263), (230, 215), (569, 209), (628, 263), (733, 322)]
+            absolute_coords = get_abs_coords(wizard, coord_list)
+            for i in range(6):
+                character = get_image_coords(character_image, wizard, (248, 28), (310, 36))
+                if character is not None:
+                    break
+                else:
+                    ahk.click(absolute_coords[i])
+                    sleep(0.5)
 
 
 # Main function
@@ -625,3 +715,4 @@ def main():
 # Runs main function
 if __name__ == "__main__":
     main()
+
