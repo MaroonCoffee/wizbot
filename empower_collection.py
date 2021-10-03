@@ -16,8 +16,6 @@ import private
 
 # TODO: Scan for shop menu before starting shop process. If not found, re-enter bazaar.
 # TODO: Create sanity checks throughout program
-# TODO: Add full restart function
-# TODO: Close Google After closing all wizards
 
 
 user_list = ["erose524", "erose526", "erose527", "erose528", "erose529"]
@@ -27,10 +25,17 @@ name_dictionary = {"erose524": "Elijah Thunderflame",
                    "erose527": "Elijah Bright",
                    "erose528": "Elijah Caster",
                    "erose529": "Elijah WindWhisper"}
+
+win_pos_dictionary = {"Elijah Thunderflame": (-8, 0),
+                      "Elijah Ash": (790, 0),
+                      "Elijah Bright": (-8, 410),
+                      "Elijah Caster": (790, 410),
+                      "Elijah WindWhisper": (790, 410)}
 ahk = AHK()
 keyboard = Controller()
 wizard_name_list = ["Elijah Ash", "Elijah Bright", "Elijah Caster"]
 full_wizard_name_list = ["Elijah Thunderflame", "Elijah Ash", "Elijah Bright", "Elijah Caster"]
+all_wizard_name_list = ["Elijah Thunderflame", "Elijah Ash", "Elijah Bright", "Elijah Caster", "Elijah WindWhisper"]
 filepath = 'E:\\Wizard101\\Wizard101.exe'
 
 
@@ -592,13 +597,6 @@ def teleport_waypoint(wizard, delay):
     teleport(wizard, delay, True)
 
 
-# When an error occurs, resets the position of all wizards back to default and then runs battle()
-def on_error():
-    reset()
-    function_caller("teleport_waypoint", full_wizard_name_list, 0)
-    sleep(3)
-
-
 # Processes a given encryption key to unlock passwords from private.py
 # noinspection PyBroadException
 def password_processor():
@@ -658,18 +656,25 @@ def game_launcher(user, delay):
         except AttributeError:
             sleep(1)
     sleep(2)
-    activate_window("Wizard101")
-    window = ahk.get_active_window()
+    window = get_window("Wizard101")
     window.set_title(wizard)
-    coord_list = [(414, 322), (406, 602)]
+    win = get_window(wizard)
+    window_coords = win_pos_dictionary[wizard]
+    win.move(window_coords[0], window_coords[1])
+    coord_list = [(414, 322), (406, 602), (27, 58)]
     absolute_coords = get_abs_coords(wizard, coord_list)
     while True:
         play_button = get_image_coords("menu_play", wizard, (304, 566), (192, 60))
-        if play_button is not None:
+        try:
+            big_play_button = get_image_coords("menu_play_big", wizard, (864, 1005), (170, 52))
+        except ValueError:
+            big_play_button = None
+        if play_button or big_play_button is not None:
             break
         else:
-            ahk.click(absolute_coords[0])
+            ahk.click(absolute_coords[2])
             sleep(0.5)
+    unfullscreen(wizard, 0.5)
     character_selector(wizard)
     ahk.click(absolute_coords[1])
     sleep(5)
@@ -701,18 +706,51 @@ def character_selector(wizard):
                     sleep(0.5)
 
 
+def close_game():
+    for wizard in all_wizard_name_list:
+        try:
+            win = get_window(wizard)
+            win.kill()
+        except AttributeError:
+            pass
+    sleep(5)
+    while True:
+        try:
+            win = get_window("Ravenwood News | Wizard101 Free Online Game")
+            win.kill()
+        except AttributeError:
+            break
+
+
+def full_restart():
+    close_game()
+    function_caller("game_launcher", user_list, 0)
+    function_caller("teleport_waypoint", full_wizard_name_list, 0)
+
+
+def unfullscreen(wizard, delay):
+    win = get_window(wizard)
+    if (win.rect[2]) == 1920:
+        ahk_key_press('Escape', 0, 0.6)
+        ahk.click(1317, 397)
+        ahk.click(1317, 327)
+        ahk.click(1174, 852)
+    sleep(delay)
+
+
 # Main function
 # noinspection PyBroadException
 def main():
     password_processor()
+    function_caller("game_launcher", user_list, 0)
+    function_caller("teleport_waypoint", full_wizard_name_list, 0)
     while True:
         try:
             battle()
         except Exception:
-            on_error()
+            full_restart()
 
 
 # Runs main function
 if __name__ == "__main__":
     main()
-
