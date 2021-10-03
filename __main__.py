@@ -693,7 +693,7 @@ def password_processor():
     for i in range(5):
         win_pos_dictionary[all_wizard_name_list[i]] = win_pos_list[i]
     global wizard_name_list
-    for i in range(3):
+    for i in range(1, 4):
         wizard_name_list.append(all_wizard_name_list[i])
     global full_wizard_name_list
     for i in range(4):
