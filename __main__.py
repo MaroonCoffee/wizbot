@@ -15,9 +15,6 @@ import private
 import datetime
 
 
-# TODO: Wait until main wizard's teleport ends before starting group teleport
-
-
 # Base Info ------------------------------------------------------------------------------------------------------------
 
 
@@ -250,6 +247,7 @@ def ui_check(wizard, image, region1, region2, delay):
             break
         if emergency_exit >= 30:
             full_restart(("Error: " + image + " not found for wizard " + wizard))
+            raise DummyError("RestartBattle")
     sleep(delay)
 
 
@@ -329,7 +327,8 @@ def battle_init(exit_channel, full_list):
     activate_window(full_list[0])
     keyboard.press('x')
     keyboard.release('x')
-    sleep(14)
+    sleep(13)
+    book_check(full_list[0], 0)
     exit_channel.put(200)
 
 
@@ -374,7 +373,8 @@ def battle(in_dungeon=False):
         activate_window(full_wizard_name_list[0])
         keyboard.press('x')
         keyboard.release('x')
-        sleep(14)
+        sleep(13)
+        book_check(full_wizard_name_list[0], 0)
     function_caller("teleport", wizard_name_list, 0)
     function_caller("book_check", full_wizard_name_list, 0)
     function_caller("auto_walk", full_wizard_name_list, 0)
@@ -657,6 +657,7 @@ def extra_sell(wizard, delay, plants=True):
             else:
                 error_name = "Jewels"
             full_restart(("Error: " + error_name + " sell stuck in loop for wizard " + wizard))
+            raise DummyError("RestartBattle")
     ahk_key_press('Escape')
     sleep(0.5)
     x_button = get_image_coords("x_button", wizard, (658, 506), (69, 50), confidence=0.95)
@@ -856,7 +857,6 @@ def main():
     in_dungeon = False
     while True:
         try:
-            print("Source battle run!'")
             battle(in_dungeon)
         except Exception as e:
             if str(e) == "RestartBattleInDungeon":
