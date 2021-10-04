@@ -244,7 +244,7 @@ def ui_check(wizard, image, region1, region2, delay):
         else:
             break
         if emergency_exit >= 30:
-            full_restart()
+            full_restart(("Error: " + image + " not found for wizard " + wizard))
     sleep(delay)
 
 
@@ -647,7 +647,11 @@ def extra_sell(wizard, delay, plants=True):
             sleep(1)
             emergency_break += 1
         if emergency_break >= 20:
-            full_restart()
+            if plants:
+                error_name = "plants"
+            else:
+                error_name = "Jewels"
+            full_restart(("Error: " + error_name + " sell stuck in loop for wizard " + wizard))
     ahk_key_press('Escape')
     sleep(0.5)
     x_button = get_image_coords("x_button", wizard, (658, 506), (69, 50), confidence=0.95)
@@ -824,9 +828,10 @@ def close_game():
 
 
 # Fully restarts all instances of Wizard101
-def full_restart():
+def full_restart(error):
     ct = datetime.datetime.now()
     print("Script ran into an error and restarted at:", ct)
+    print(error)
     close_game()
     function_caller("game_launcher", user_list, 0)
     function_caller("teleport_waypoint", full_wizard_name_list, 0)
@@ -846,8 +851,8 @@ def main():
     while True:
         try:
             battle()
-        except Exception:
-            full_restart()
+        except Exception as e:
+            full_restart("Error: Exception " + e + " caught and forced restart.")
 
 
 # Runs main function
