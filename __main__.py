@@ -333,6 +333,7 @@ def exit_code_handler(exit_code):
     if exit_code == 100:
         ahk_key_press('w', 2)
         teleport(full_wizard_name_list[0], 0, True)
+        sleep(2)
         book_check(full_wizard_name_list[0], 0)
         battle_enter_handler()
     if exit_code == 101:
