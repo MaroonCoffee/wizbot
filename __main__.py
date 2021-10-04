@@ -141,6 +141,11 @@ def read_text(bbox):
     return text
 
 
+class DummyError(Exception):
+    def __init__(self, msg):
+        super().__init__(msg)
+
+
 # Common Functions -----------------------------------------------------------------------------------------------------
 
 
@@ -340,7 +345,7 @@ def exit_code_handler(exit_code):
         reset()
         battle_enter_handler()
     if exit_code == 200:
-        battle(True)
+        raise DummyError("RestartBattleInDungeon")
     if exit_code == 201:
         bazaar()
 
@@ -429,7 +434,7 @@ def bazaar():
     function_caller("jewel_sell", full_wizard_name_list, 0.5)
     function_caller("teleport_waypoint", full_wizard_name_list, 0)
     function_caller("book_check", full_wizard_name_list, 0)
-    battle()
+    raise DummyError("RestartBattle")
 
 
 # Sets up an account to start the selling/buying process
@@ -848,11 +853,18 @@ def main():
     function_caller("game_launcher", user_list, 0)
     function_caller("teleport_waypoint", full_wizard_name_list, 0)
     function_caller("book_check", full_wizard_name_list, 0)
+    in_dungeon = False
     while True:
         try:
-            battle()
+            print("Source battle run!'")
+            battle(in_dungeon)
         except Exception as e:
-            full_restart("Error: Exception " + e + " caught and forced restart.")
+            if str(e) == "RestartBattleInDungeon":
+                in_dungeon = True
+            elif str(e) == "RestartBattle":
+                in_dungeon = False
+            else:
+                full_restart("Error: Exception " + str(e) + " caught and forced restart.")
 
 
 # Runs main function
