@@ -15,6 +15,9 @@ import private
 import datetime
 
 
+# TODO: Wait until main wizard's teleport ends before starting group teleport
+
+
 # Base Info ------------------------------------------------------------------------------------------------------------
 
 
@@ -287,8 +290,8 @@ def card_handler():
 # Manages multiple processes that monitor the current battle state
 def battle_end_handler():
     exit_channel = Queue()
-    p1 = Process(target=battle_completed_detector, args=(exit_channel,))
-    p2 = Process(target=failed_round_detector, args=(exit_channel,))
+    p1 = Process(target=battle_completed_detector, args=(exit_channel, full_wizard_name_list))
+    p2 = Process(target=failed_round_detector, args=(exit_channel, full_wizard_name_list))
     p1.start()
     p2.start()
     while True:
@@ -303,8 +306,8 @@ def battle_end_handler():
 # Manages multiple processes that determine whether to fight or to enter the bazaar
 def battle_enter_handler():
     exit_channel = Queue()
-    p1 = Process(target=battle_init, args=(exit_channel,))
-    p2 = Process(target=backpack_check_all, args=(exit_channel,))
+    p1 = Process(target=battle_init, args=(exit_channel, full_wizard_name_list))
+    p2 = Process(target=backpack_check_all, args=(exit_channel, wizard_name_list))
     p1.start()
     p2.start()
     while True:
@@ -317,8 +320,8 @@ def battle_enter_handler():
 
 
 # Begins the battle process, but can be cancelled if selling is necessary
-def battle_init(exit_channel):
-    activate_window(full_wizard_name_list[0])
+def battle_init(exit_channel, full_list):
+    activate_window(full_list[0])
     keyboard.press('x')
     keyboard.release('x')
     sleep(14)
@@ -342,18 +345,18 @@ def exit_code_handler(exit_code):
 
 
 # Checks to see if the player is still in battle
-def battle_completed_detector(exit_channel):
+def battle_completed_detector(exit_channel, full_list):
     while True:
-        piggle_coords = get_image_coords("piggle", full_wizard_name_list[0], (110, 511), (54, 62))
+        piggle_coords = get_image_coords("piggle", full_list[0], (110, 511), (54, 62))
         if piggle_coords is not None:
             break
     exit_channel.put(100)
 
 
 # Checks to see if a round has failed
-def failed_round_detector(exit_channel):
+def failed_round_detector(exit_channel, full_list):
     while True:
-        pass_coords = get_image_coords("pass", full_wizard_name_list[0], (201, 376), (100, 42))
+        pass_coords = get_image_coords("pass", full_list[0], (201, 376), (100, 42))
         if pass_coords is not None:
             break
     exit_channel.put(101)
@@ -378,9 +381,9 @@ def battle(in_dungeon=False):
 
 
 # Checks all 3 of the minion accounts for full backpacks
-def backpack_check_all(exit_channel):
+def backpack_check_all(exit_channel, full_list):
     sleep(1)
-    for wizard in wizard_name_list:
+    for wizard in full_list:
         check = backpack_check(wizard)
         if check:
             exit_channel.put(201)
