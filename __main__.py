@@ -235,11 +235,11 @@ def unfullscreen(wizard, delay):
 
 
 # Checks the UI of a given wizard to make sure they are in the right area. If not, full_restarts program after 30 fails
-def ui_check(wizard, image, region1, region2, delay):
+def ui_check(wizard, image, region1, region2, delay, confidence=0.8):
     activate_window(wizard)
     emergency_exit = 0
     while True:
-        item = get_image_coords(image, wizard, region1, region2)
+        item = get_image_coords(image, wizard, region1, region2, confidence=confidence)
         if item is None:
             emergency_exit += 1
             sleep(1)
@@ -447,6 +447,7 @@ def initiate_bazaar(wizard, delay):
     ahk_key_press('x')
     sleep(0.5)
     ahk.click(666, 174)
+    ui_check(wizard, "bazaar_backpack", (421, 855), (83, 90), 0, confidence=0.95)
     item_sell(wizard)
     ahk.click(1456, 897)
     sleep(0.5)
@@ -496,6 +497,7 @@ def item_sell(wizard):
                 sleep(0.5)
                 ahk.click(666, 174)
                 category, page, row, sell_streak = 1, 1, 1, 0
+                ui_check(wizard, "bazaar_backpack", (421, 855), (83, 90), 0, confidence=0.95)
         category += 1
         if category == 8 and page == 1:
             category = 9
@@ -595,6 +597,7 @@ def bazaar_buy(wizard):
             ahk.click(1428, 299)
             sleep(0.5)
             empower_drought = 0
+            ui_check(wizard, "bazaar_cards", (421, 855), (83, 90), 0, confidence=0.95)
 
 
 # Either checks to see if there are more than 9 empowers, and if so, buys until there are only 9 left, or buys all
