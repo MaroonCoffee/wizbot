@@ -239,6 +239,8 @@ def ui_check(wizard, image, region1, region2, delay, confidence=0.8):
     activate_window(wizard)
     emergency_exit = 0
     while True:
+        absolute_coords = get_abs_coords(wizard, (8, 615), True)
+        ahk.mouse_position = absolute_coords
         item = get_image_coords(image, wizard, region1, region2, confidence=confidence)
         if item is None:
             emergency_exit += 1
@@ -254,11 +256,6 @@ def ui_check(wizard, image, region1, region2, delay, confidence=0.8):
 # Checks the UI for the spell book
 def book_check(wizard, delay):
     ui_check(wizard, "book", (699, 508), (107, 125), delay)
-
-
-# Checks the UI for the meteor strike card
-def meteor_check(wizard, delay):
-    ui_check(wizard, "meteor", (380, 289), (108, 79), delay)
 
 
 # Battle Functions -----------------------------------------------------------------------------------------------------
@@ -378,7 +375,7 @@ def battle(in_dungeon=False):
     function_caller("teleport", wizard_name_list, 0)
     function_caller("book_check", full_wizard_name_list, 0)
     function_caller("auto_walk", full_wizard_name_list, 0)
-    meteor_check(full_wizard_name_list[0], 0)
+    ui_check(full_wizard_name_list[0], "meteor", (380, 289), (108, 79), 0)
     card_handler()
     function_caller("pass_wizard", wizard_name_list, 0)
     activate_window(full_wizard_name_list[1])
