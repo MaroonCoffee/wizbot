@@ -765,8 +765,12 @@ def game_launcher(user, delay):
         except AttributeError:
             sleep(1)
     sleep(2)
-    window = get_window("Wizard101")
-    window.set_title(wizard)
+    while True:
+        window = get_window("Wizard101")
+        window.set_title(wizard)
+        window = get_window(wizard)
+        if window is not None:
+            break
     win = get_window(wizard)
     window_coords = win_pos_dictionary[wizard]
     win.move(window_coords[0], window_coords[1])
