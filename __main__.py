@@ -758,6 +758,7 @@ def game_launcher(user, delay):
         except AttributeError:
             sleep(1)
     ahk.click(absolute_coords[2])
+    sleep(2)
     while True:
         try:
             activate_window("Wizard101")
@@ -768,8 +769,8 @@ def game_launcher(user, delay):
     while True:
         window = get_window("Wizard101")
         window.set_title(wizard)
-        window = get_window(wizard)
-        if window is not None:
+        working_window = get_window(wizard)
+        if working_window is not None:
             break
     win = get_window(wizard)
     window_coords = win_pos_dictionary[wizard]
@@ -828,6 +829,12 @@ def close_game():
             win.kill()
         except AttributeError:
             pass
+    while True:
+        try:
+            win = get_window("Wizard101")
+            win.kill()
+        except AttributeError:
+            break
     sleep(5)
     while True:
         try:
@@ -842,11 +849,12 @@ def close_game():
 
 
 # Fully restarts all instances of Wizard101
-def full_restart(error):
-    ct = datetime.datetime.now()
-    print("Script ran into an error and restarted at:", ct)
-    print(error)
-    close_game()
+def full_restart(error, closegame=True):
+    if closegame:
+        ct = datetime.datetime.now()
+        print("Script ran into an error and restarted at:", ct)
+        print(error)
+        close_game()
     function_caller("game_launcher", user_list, 0)
     function_caller("teleport_waypoint", full_wizard_name_list, 0)
     function_caller("book_check", full_wizard_name_list, 0)
@@ -859,9 +867,10 @@ def full_restart(error):
 # noinspection PyBroadException
 def main():
     password_processor()
-    function_caller("game_launcher", user_list, 0)
-    function_caller("teleport_waypoint", full_wizard_name_list, 0)
-    function_caller("book_check", full_wizard_name_list, 0)
+    try:
+        full_restart("NA", False)
+    except Exception as e:
+        full_restart("Error: Exception " + str(e) + " caught and forced restart.")
     in_dungeon = False
     while True:
         try:
