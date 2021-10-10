@@ -724,6 +724,7 @@ def decrypter(password, encoded_text):
     return converted_text
 
 
+# noinspection PyBroadException
 # Launches 5 instances of Wizard101 and names the windows according to the wizard logged into.
 def game_launcher(user, delay):
     wizard = name_dictionary[user]
@@ -755,7 +756,7 @@ def game_launcher(user, delay):
                 break
             else:
                 sleep(1)
-        except AttributeError:
+        except Exception:
             sleep(1)
     ahk.click(absolute_coords[2])
     sleep(2)
