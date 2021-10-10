@@ -5,3 +5,4 @@ PyAutoGUI~=0.9.53
 pytesseract~=0.3.8
 ahk~=0.12.0
 pynput~=1.7.3
+opencv-python~=4.5.2.54
