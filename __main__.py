@@ -303,32 +303,6 @@ def battle_end_handler():
     exit_code_handler(exit_code)
 
 
-# Manages multiple processes that determine whether to fight or to enter the bazaar
-def battle_enter_handler():
-    exit_channel = Queue()
-    p1 = Process(target=battle_init, args=(exit_channel, full_wizard_name_list))
-    p2 = Process(target=backpack_check_all, args=(exit_channel, wizard_name_list))
-    p1.start()
-    p2.start()
-    while True:
-        exit_code = exit_channel.get()
-        if exit_code != "":
-            break
-    p1.terminate()
-    p2.terminate()
-    exit_code_handler(exit_code)
-
-
-# Begins the battle process, but can be cancelled if selling is necessary
-def battle_init(exit_channel, full_list):
-    activate_window(full_list[0])
-    keyboard.press('x')
-    keyboard.release('x')
-    sleep(13)
-    book_check(full_list[0], 0)
-    exit_channel.put(200)
-
-
 # Handles various exit codes
 def exit_code_handler(exit_code):
     if exit_code == 100:
@@ -336,14 +310,10 @@ def exit_code_handler(exit_code):
         teleport(full_wizard_name_list[0], 0, True)
         sleep(2)
         book_check(full_wizard_name_list[0], 0)
-        battle_enter_handler()
+        battle_enter()
     if exit_code == 101:
         reset()
-        battle_enter_handler()
-    if exit_code == 200:
-        raise DummyError("RestartBattleInDungeon")
-    if exit_code == 201:
-        bazaar()
+        battle_enter()
 
 
 # Checks to see if the player is still in battle
@@ -383,13 +353,18 @@ def battle(in_dungeon=False):
     battle_end_handler()
 
 
-# Checks all 3 of the minion accounts for full backpacks
-def backpack_check_all(exit_channel, full_list):
+# Checks all 3 of the minion accounts for full backpacks, and if not, starts battle
+def battle_enter():
+    activate_window(full_wizard_name_list[0])
+    keyboard.press('x')
+    keyboard.release('x')
     sleep(1)
-    for wizard in full_list:
+    for wizard in wizard_name_list:
         check = backpack_check(wizard)
         if check:
-            exit_channel.put(201)
+            bazaar()
+    book_check(full_wizard_name_list[0], 0)
+    raise DummyError("RestartBattleInDungeon")
 
 
 # Checks a given wizard's backpack to see if their backpack is full
@@ -416,6 +391,7 @@ def backpack_check(wizard):
 def bazaar():
     activate_window(full_wizard_name_list[0])
     ahk_key_press('w')
+    ui_check(full_wizard_name_list[0], "book", (699, 508), (107, 125), 0)
     home_coords = get_abs_coords(full_wizard_name_list[0], (649, 582), True)
     ahk.click(home_coords)
     sleep(7)
