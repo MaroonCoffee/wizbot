@@ -363,7 +363,7 @@ def battle_enter():
     for wizard in wizard_name_list:
         check = backpack_check(wizard)
         if check:
-            bazaar()
+            raise DummyError("Bazaar")
     book_check(full_wizard_name_list[0], 0)
     raise DummyError("RestartBattleInDungeon")
 
@@ -858,6 +858,8 @@ def main():
                 in_dungeon = True
             elif str(e) == "RestartBattle":
                 in_dungeon = False
+            elif str(e) == "Bazaar":
+                bazaar()
             else:
                 full_restart("Error: Exception " + str(e) + " caught and forced restart.")
 
