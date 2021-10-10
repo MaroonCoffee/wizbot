@@ -204,6 +204,7 @@ def auto_spin(wizard, delay=0.2):
     activate_window(wizard)
     hold_key('d')
     hold_key('shift', True, True)
+    sleep(1)
     hold_key('d', False)
     hold_key('shift', False, True)
     sleep(delay)
