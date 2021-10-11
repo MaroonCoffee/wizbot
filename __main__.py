@@ -248,8 +248,8 @@ def ui_check(wizard, image, region1, region2, delay, confidence=0.8):
         else:
             break
         if emergency_exit >= 30:
-            full_restart(("Error: " + image + " not found for wizard " + wizard))
-            raise DummyError("RestartBattle")
+            error = "Error: " + image + " not found for wizard " + wizard
+            raise DummyError(error)
     sleep(delay)
 
 
@@ -727,11 +727,8 @@ def game_launcher(user, delay):
     ahk.click(absolute_coords[3])
     while True:
         try:
-            play_button = get_image_coords("launcher_play", "Wizard101", (616, 517), (159, 76))
-            if play_button is not None:
-                break
-            else:
-                sleep(1)
+            ui_check("Wizard101", "launcher_play", (616, 517), (159, 76), 0)
+            break
         except Exception:
             sleep(1)
     ahk.click(absolute_coords[2])
@@ -812,6 +809,12 @@ def close_game():
             win.kill()
         except AttributeError:
             break
+    while True:
+        try:
+            win = get_window("Error")
+            win.kill()
+        except AttributeError:
+            break
     sleep(5)
     while True:
         try:
@@ -874,10 +877,12 @@ def main():
             elif str(e) == "Bazaar":
                 to_bazaar = True
                 restarting = False
+                in_dungeon = False
             else:
                 error_message = "Error: Exception " + str(e) + " caught and forced restart."
                 restarting = True
                 to_bazaar = False
+                in_dungeon = False
 
 
 # Runs main function
