@@ -845,10 +845,10 @@ def full_restart(error, closegame=True):
 # noinspection PyBroadException
 def main():
     password_processor()
-    # try:
-    #     full_restart("NA", False)
-    # except Exception as e:
-    #     full_restart("Error: Exception " + str(e) + " caught and forced restart.")
+    try:
+        full_restart("NA", False)
+    except Exception as e:
+        full_restart("Error: Exception " + str(e) + " caught and forced restart.")
     in_dungeon = False
     to_bazaar = False
     restarting = False
