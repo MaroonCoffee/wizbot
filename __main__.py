@@ -440,7 +440,7 @@ def item_sell(wizard):
     win = get_window(wizard)
     if (bazaar_ui is None) or ((win.rect[2]) != 1920):
         unfullscreen(wizard, 0)
-        bazaar()
+        raise DummyError("Bazaar")
     category = 1
     page = 1
     while True:
@@ -845,23 +845,40 @@ def full_restart(error, closegame=True):
 # noinspection PyBroadException
 def main():
     password_processor()
-    try:
-        full_restart("NA", False)
-    except Exception as e:
-        full_restart("Error: Exception " + str(e) + " caught and forced restart.")
+    # try:
+    #     full_restart("NA", False)
+    # except Exception as e:
+    #     full_restart("Error: Exception " + str(e) + " caught and forced restart.")
     in_dungeon = False
+    to_bazaar = False
+    restarting = False
+    error_message = ""
     while True:
         try:
-            battle(in_dungeon)
+            if to_bazaar:
+                bazaar()
+                to_bazaar = False
+            elif restarting:
+                full_restart(error_message)
+                restarting = False
+            else:
+                battle(in_dungeon)
         except Exception as e:
             if str(e) == "RestartBattleInDungeon":
                 in_dungeon = True
+                to_bazaar = False
+                restarting = False
             elif str(e) == "RestartBattle":
                 in_dungeon = False
+                to_bazaar = False
+                restarting = False
             elif str(e) == "Bazaar":
-                bazaar()
+                to_bazaar = True
+                restarting = False
             else:
-                full_restart("Error: Exception " + str(e) + " caught and forced restart.")
+                error_message = "Error: Exception " + str(e) + " caught and forced restart."
+                restarting = True
+                to_bazaar = False
 
 
 # Runs main function
