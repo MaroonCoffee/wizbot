@@ -30,6 +30,8 @@ full_wizard_name_list = []
 all_wizard_name_list = []
 filepath = ''
 fast_empower_buy = True
+lag_mode = True
+wizard_to_skip = 0
 
 
 # Base Functions -------------------------------------------------------------------------------------------------------
@@ -386,7 +388,15 @@ def battle(in_dungeon=False):
 # Checks all 3 of the minion accounts for full backpacks
 def backpack_check_all(exit_channel, full_list):
     sleep(1)
-    for wizard in full_list:
+    global wizard_to_skip
+    wizards_to_check = full_list
+    if lag_mode:
+        if wizard_to_skip >= 2:
+            wizard_to_skip = 0
+        else:
+            wizard_to_skip += 1
+        del wizards_to_check[wizard_to_skip]
+    for wizard in wizards_to_check:
         check = backpack_check(wizard)
         if check:
             exit_channel.put(201)
