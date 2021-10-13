@@ -839,6 +839,15 @@ def character_selector(wizard):
                     sleep(0.5)
 
 
+def try_close_window(window):
+    while True:
+        try:
+            win = get_window(window)
+            win.kill()
+        except AttributeError:
+            break
+
+
 # Closes all instances of wizard101 and closes the google popup following the game's closure
 def close_game():
     for wizard in all_wizard_name_list:
@@ -858,6 +867,8 @@ def close_game():
                 win.kill()
             except AttributeError:
                 break
+    try_close_window("Error")
+    try_close_window("Wizard101")
 
 
 # Fully restarts all instances of Wizard101
@@ -891,7 +902,12 @@ def main():
             elif str(e) == "RestartBattle":
                 in_dungeon = False
             else:
-                full_restart("Error: Exception " + str(e) + " caught and forced restart.")
+                while True:
+                    try:
+                        full_restart("Error: Exception " + str(e) + " caught and forced restart.")
+                        break
+                    except Exception:
+                        close_game()
 
 
 # Runs main function
