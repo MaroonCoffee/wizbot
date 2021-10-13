@@ -416,6 +416,7 @@ def backpack_check(wizard):
 def bazaar():
     activate_window(full_wizard_name_list[0])
     ahk_key_press('w')
+    ui_check(full_wizard_name_list[0], "book", (699, 508), (107, 125), 0)
     home_coords = get_abs_coords(full_wizard_name_list[0], (649, 582), True)
     ahk.click(home_coords)
     sleep(7)
