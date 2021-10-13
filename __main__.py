@@ -740,26 +740,35 @@ def decrypter(password, encoded_text):
 
 # Launches 5 instances of Wizard101 and names the windows according to the wizard logged into.
 def game_launcher(user, delay):
-    wizard = name_dictionary[user]
-    os.startfile(filepath)
     while True:
-        try:
-            activate_window("Wizard101")
-            break
-        except AttributeError:
+        wizard = name_dictionary[user]
+        os.startfile(filepath)
+        while True:
             try:
-                activate_window("Error")
-                win = get_window("Error")
-                win.kill()
-                os.startfile(filepath)
+                activate_window("Wizard101")
+                break
             except AttributeError:
+                try:
+                    activate_window("Error")
+                    win = get_window("Error")
+                    win.kill()
+                    os.startfile(filepath)
+                except AttributeError:
+                    sleep(1)
+        restart_fails = 0
+        while True:
+            login_button = get_image_coords("login_gray", "Wizard101", (616, 517), (159, 76))
+            if login_button is not None:
+                restart_fail = False
+                break
+            else:
                 sleep(1)
-    while True:
-        login_button = get_image_coords("login_gray", "Wizard101", (616, 517), (159, 76))
-        if login_button is not None:
+                restart_fails += 1
+            if restart_fails >= 120:
+                restart_fail = True
+                break
+        if not restart_fail:
             break
-        else:
-            sleep(1)
     coord_list = [(205, 562), (400, 563), (698, 555), (734, 487)]
     absolute_coords = get_abs_coords("Wizard101", coord_list)
     ahk.click(absolute_coords[0])
