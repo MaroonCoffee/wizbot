@@ -248,8 +248,8 @@ def ui_check(wizard, image, region1, region2, delay, confidence=0.8):
         else:
             break
         if emergency_exit >= 30:
-            error = "Error: " + image + " not found for wizard " + wizard
-            raise DummyError(error)
+            full_restart(("Error: " + image + " not found for wizard " + wizard))
+            raise DummyError("RestartBattle")
     sleep(delay)
 
 
@@ -303,6 +303,32 @@ def battle_end_handler():
     exit_code_handler(exit_code)
 
 
+# Manages multiple processes that determine whether to fight or to enter the bazaar
+def battle_enter_handler():
+    exit_channel = Queue()
+    p1 = Process(target=battle_init, args=(exit_channel, full_wizard_name_list))
+    p2 = Process(target=backpack_check_all, args=(exit_channel, wizard_name_list))
+    p1.start()
+    p2.start()
+    while True:
+        exit_code = exit_channel.get()
+        if exit_code != "":
+            break
+    p1.terminate()
+    p2.terminate()
+    exit_code_handler(exit_code)
+
+
+# Begins the battle process, but can be cancelled if selling is necessary
+def battle_init(exit_channel, full_list):
+    activate_window(full_list[0])
+    keyboard.press('x')
+    keyboard.release('x')
+    sleep(13)
+    book_check(full_list[0], 0)
+    exit_channel.put(200)
+
+
 # Handles various exit codes
 def exit_code_handler(exit_code):
     if exit_code == 100:
@@ -310,10 +336,14 @@ def exit_code_handler(exit_code):
         teleport(full_wizard_name_list[0], 0, True)
         sleep(2)
         book_check(full_wizard_name_list[0], 0)
-        battle_enter()
+        battle_enter_handler()
     if exit_code == 101:
         reset()
-        battle_enter()
+        battle_enter_handler()
+    if exit_code == 200:
+        raise DummyError("RestartBattleInDungeon")
+    if exit_code == 201:
+        bazaar()
 
 
 # Checks to see if the player is still in battle
@@ -353,18 +383,13 @@ def battle(in_dungeon=False):
     battle_end_handler()
 
 
-# Checks all 3 of the minion accounts for full backpacks, and if not, starts battle
-def battle_enter():
-    activate_window(full_wizard_name_list[0])
-    keyboard.press('x')
-    keyboard.release('x')
+# Checks all 3 of the minion accounts for full backpacks
+def backpack_check_all(exit_channel, full_list):
     sleep(1)
-    for wizard in wizard_name_list:
+    for wizard in full_list:
         check = backpack_check(wizard)
         if check:
-            raise DummyError("Bazaar")
-    book_check(full_wizard_name_list[0], 0)
-    raise DummyError("RestartBattleInDungeon")
+            exit_channel.put(201)
 
 
 # Checks a given wizard's backpack to see if their backpack is full
@@ -439,7 +464,7 @@ def item_sell(wizard):
     win = get_window(wizard)
     if (bazaar_ui is None) or ((win.rect[2]) != 1920):
         unfullscreen(wizard, 0)
-        raise DummyError("Bazaar")
+        bazaar()
     category = 1
     page = 1
     while True:
@@ -700,7 +725,6 @@ def decrypter(password, encoded_text):
     return converted_text
 
 
-# noinspection PyBroadException
 # Launches 5 instances of Wizard101 and names the windows according to the wizard logged into.
 def game_launcher(user, delay):
     wizard = name_dictionary[user]
@@ -727,12 +751,14 @@ def game_launcher(user, delay):
     ahk.click(absolute_coords[3])
     while True:
         try:
-            ui_check("Wizard101", "launcher_play", (616, 517), (159, 76), 0)
-            break
-        except Exception:
+            play_button = get_image_coords("launcher_play", "Wizard101", (616, 517), (159, 76))
+            if play_button is not None:
+                break
+            else:
+                sleep(1)
+        except AttributeError:
             sleep(1)
     ahk.click(absolute_coords[2])
-    sleep(2)
     while True:
         try:
             activate_window("Wizard101")
@@ -743,8 +769,8 @@ def game_launcher(user, delay):
     while True:
         window = get_window("Wizard101")
         window.set_title(wizard)
-        working_window = get_window(wizard)
-        if working_window is not None:
+        window = get_window(wizard)
+        if window is not None:
             break
     win = get_window(wizard)
     window_coords = win_pos_dictionary[wizard]
@@ -803,18 +829,6 @@ def close_game():
             win.kill()
         except AttributeError:
             pass
-    while True:
-        try:
-            win = get_window("Wizard101")
-            win.kill()
-        except AttributeError:
-            break
-    while True:
-        try:
-            win = get_window("Error")
-            win.kill()
-        except AttributeError:
-            break
     sleep(5)
     while True:
         try:
@@ -829,12 +843,11 @@ def close_game():
 
 
 # Fully restarts all instances of Wizard101
-def full_restart(error, closegame=True):
-    if closegame:
-        ct = datetime.datetime.now()
-        print("Script ran into an error and restarted at:", ct)
-        print(error)
-        close_game()
+def full_restart(error):
+    ct = datetime.datetime.now()
+    print("Script ran into an error and restarted at:", ct)
+    print(error)
+    close_game()
     function_caller("game_launcher", user_list, 0)
     function_caller("teleport_waypoint", full_wizard_name_list, 0)
     function_caller("book_check", full_wizard_name_list, 0)
@@ -847,42 +860,20 @@ def full_restart(error, closegame=True):
 # noinspection PyBroadException
 def main():
     password_processor()
-    try:
-        full_restart("NA", False)
-    except Exception as e:
-        full_restart("Error: Exception " + str(e) + " caught and forced restart.")
+    function_caller("game_launcher", user_list, 0)
+    function_caller("teleport_waypoint", full_wizard_name_list, 0)
+    function_caller("book_check", full_wizard_name_list, 0)
     in_dungeon = False
-    to_bazaar = False
-    restarting = False
-    error_message = ""
     while True:
         try:
-            if to_bazaar:
-                bazaar()
-                to_bazaar = False
-            elif restarting:
-                full_restart(error_message)
-                restarting = False
-            else:
-                battle(in_dungeon)
+            battle(in_dungeon)
         except Exception as e:
             if str(e) == "RestartBattleInDungeon":
                 in_dungeon = True
-                to_bazaar = False
-                restarting = False
             elif str(e) == "RestartBattle":
                 in_dungeon = False
-                to_bazaar = False
-                restarting = False
-            elif str(e) == "Bazaar":
-                to_bazaar = True
-                restarting = False
-                in_dungeon = False
             else:
-                error_message = "Error: Exception " + str(e) + " caught and forced restart."
-                restarting = True
-                to_bazaar = False
-                in_dungeon = False
+                full_restart("Error: Exception " + str(e) + " caught and forced restart.")
 
 
 # Runs main function
