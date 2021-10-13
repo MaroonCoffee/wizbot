@@ -362,6 +362,7 @@ def battle_completed_detector(exit_channel, full_list):
         piggle_coords = get_image_coords("piggle", full_list[0], (110, 511), (54, 62))
         if piggle_coords is not None:
             break
+        sleep(1)
     exit_channel.put(100)
 
 
@@ -371,6 +372,7 @@ def failed_round_detector(exit_channel, full_list):
         pass_coords = get_image_coords("pass", full_list[0], (201, 376), (100, 42))
         if pass_coords is not None:
             break
+        sleep(1)
     exit_channel.put(101)
 
 
