@@ -309,9 +309,15 @@ def battle_end_handler():
 
 # Manages multiple processes that determine whether to fight or to enter the bazaar
 def battle_enter_handler():
+    global wizard_to_skip
+    if lag_mode:
+        if wizard_to_skip >= 2:
+            wizard_to_skip = 0
+        else:
+            wizard_to_skip += 1
     exit_channel = Queue()
     p1 = Process(target=battle_init, args=(exit_channel, full_wizard_name_list))
-    p2 = Process(target=backpack_check_all, args=(exit_channel, wizard_name_list))
+    p2 = Process(target=backpack_check_all, args=(exit_channel, wizard_name_list, wizard_to_skip))
     p1.start()
     p2.start()
     while True:
@@ -388,16 +394,11 @@ def battle(in_dungeon=False):
 
 
 # Checks all 3 of the minion accounts for full backpacks
-def backpack_check_all(exit_channel, full_list):
+def backpack_check_all(exit_channel, full_list, wizskip):
     sleep(1)
-    global wizard_to_skip
     wizards_to_check = full_list
     if lag_mode:
-        if wizard_to_skip >= 2:
-            wizard_to_skip = 0
-        else:
-            wizard_to_skip += 1
-        del wizards_to_check[wizard_to_skip]
+        del wizards_to_check[wizskip]
     for wizard in wizards_to_check:
         check = backpack_check(wizard)
         if check:
