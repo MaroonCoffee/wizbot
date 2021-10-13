@@ -286,7 +286,7 @@ def card_handler():
     ahk.mouse_move(abs_meteor_coords[0], abs_escape_coords[1])
     ahk.click(abs_meteor_coords[0], abs_meteor_coords[1])
     abs_card_coords = get_abs_coords(full_wizard_name_list[0], (430, 319), True)
-    ahk.double_click(abs_card_coords[0], abs_card_coords[1])
+    ahk.click(abs_card_coords[0], abs_card_coords[1])
 
 
 # Manages multiple processes that monitor the current battle state
@@ -748,6 +748,7 @@ def game_launcher(user, delay):
                 activate_window("Error")
                 win = get_window("Error")
                 win.kill()
+                os.startfile(filepath)
             except AttributeError:
                 sleep(1)
     while True:
