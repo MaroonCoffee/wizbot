@@ -744,7 +744,12 @@ def game_launcher(user, delay):
             activate_window("Wizard101")
             break
         except AttributeError:
-            sleep(1)
+            try:
+                activate_window("Error")
+                win = get_window("Error")
+                win.kill()
+            except AttributeError:
+                sleep(1)
     while True:
         login_button = get_image_coords("login_gray", "Wizard101", (616, 517), (159, 76))
         if login_button is not None:
