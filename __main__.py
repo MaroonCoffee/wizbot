@@ -21,17 +21,21 @@ import datetime
 user_list = []
 user_dictionary = {}
 name_dictionary = {}
-win_pos_list = [(-8, 0), (790, 0), (-8, 410), (790, 410), (790, 410)]
 win_pos_dictionary = {}
-ahk = AHK()
-keyboard = Controller()
 wizard_name_list = []
 full_wizard_name_list = []
 all_wizard_name_list = []
-filepath = ''
-fast_empower_buy = True
-lag_mode = True
+
 wizard_to_skip = 0
+
+ahk = AHK()
+keyboard = Controller()
+
+filepath = private.file_path
+
+fast_empower_buy = private.fast_empower_buy
+lag_mode = private.lag_mode
+in_game = private.in_game
 
 
 # Base Functions -------------------------------------------------------------------------------------------------------
@@ -720,6 +724,7 @@ def password_processor():
     for i in range(5):
         name_dictionary[user_list[i]] = all_wizard_name_list[i]
     global win_pos_dictionary
+    win_pos_list = [(-8, 0), (790, 0), (-8, 410), (790, 410), (790, 410)]
     for i in range(5):
         win_pos_dictionary[all_wizard_name_list[i]] = win_pos_list[i]
     global wizard_name_list
@@ -728,8 +733,6 @@ def password_processor():
     global full_wizard_name_list
     for i in range(4):
         full_wizard_name_list.append(all_wizard_name_list[i])
-    global filepath
-    filepath = private.file_path
 
 
 # Decrypts the given info with the given encryption password
@@ -901,9 +904,10 @@ def full_restart(error):
 # noinspection PyBroadException
 def main():
     password_processor()
-    function_caller("game_launcher", user_list, 0)
-    function_caller("teleport_waypoint", full_wizard_name_list, 0)
-    function_caller("book_check", full_wizard_name_list, 0)
+    if in_game:
+        function_caller("game_launcher", user_list, 0)
+        function_caller("teleport_waypoint", full_wizard_name_list, 0)
+        function_caller("book_check", full_wizard_name_list, 0)
     in_dungeon = False
     while True:
         try:
