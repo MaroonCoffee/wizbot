@@ -904,7 +904,7 @@ def full_restart(error):
 # noinspection PyBroadException
 def main():
     password_processor()
-    if in_game:
+    if not in_game:
         function_caller("game_launcher", user_list, 0)
         function_caller("teleport_waypoint", full_wizard_name_list, 0)
         function_caller("book_check", full_wizard_name_list, 0)
