@@ -241,7 +241,7 @@ def unfullscreen(wizard, delay):
 
 
 # Checks the UI of a given wizard to make sure they are in the right area. If not, full_restarts program after 30 fails
-def ui_check(wizard, image, region1, region2, delay, confidence=0.8):
+def ui_check(wizard, image, region1, region2, delay, confidence=0.8, multiprocessing=False):
     activate_window(wizard)
     emergency_exit = 0
     while True:
@@ -254,8 +254,11 @@ def ui_check(wizard, image, region1, region2, delay, confidence=0.8):
         else:
             break
         if emergency_exit >= 30:
-            full_restart(("Error: " + image + " not found for wizard " + wizard))
-            raise DummyError("RestartBattle")
+            if multiprocessing:
+                return "Error"
+            else:
+                full_restart(("Error: " + image + " not found for wizard " + wizard))
+                raise DummyError("RestartBattle")
     sleep(delay)
 
 
@@ -339,8 +342,11 @@ def battle_init(exit_channel, full_list):
     keyboard.press('x')
     keyboard.release('x')
     sleep(13)
-    book_check(full_list[0], 0)
-    exit_channel.put(200)
+    book_error = ui_check(full_list[0], "book", (699, 508), (107, 125), 0, confidence=0.8, multiprocessing=True)
+    if book_error == "Error":
+        exit_channel.put(300)
+    else:
+        exit_channel.put(200)
 
 
 # Handles various exit codes
@@ -358,6 +364,9 @@ def exit_code_handler(exit_code):
         raise DummyError("RestartBattleInDungeon")
     if exit_code == 201:
         bazaar()
+    if exit_code == 300:
+        full_restart(("Error: " + "book" + " not found for wizard " + full_wizard_name_list[0]))
+        raise DummyError("RestartBattle")
 
 
 # Checks to see if the player is still in battle
