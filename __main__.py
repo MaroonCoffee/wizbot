@@ -914,9 +914,18 @@ def full_restart(error):
 def main():
     password_processor()
     if not in_game:
-        function_caller("game_launcher", user_list, 0)
-        function_caller("teleport_waypoint", full_wizard_name_list, 0)
-        function_caller("book_check", full_wizard_name_list, 0)
+        while True:
+            try:
+                function_caller("game_launcher", user_list, 0)
+                function_caller("teleport_waypoint", full_wizard_name_list, 0)
+                function_caller("book_check", full_wizard_name_list, 0)
+                break
+            except Exception as e:
+                try:
+                    full_restart("Error: Exception " + str(e) + " caught and forced restart.")
+                    break
+                except Exception:
+                    close_game()
     in_dungeon = False
     while True:
         try:
