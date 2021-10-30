@@ -752,6 +752,7 @@ def decrypter(password, encoded_text):
     return converted_text
 
 
+# noinspection PyBroadException
 # Launches 5 instances of Wizard101 and names the windows according to the wizard logged into.
 def game_launcher(user, delay):
     while True:
@@ -808,14 +809,21 @@ def game_launcher(user, delay):
         except AttributeError:
             sleep(1)
     sleep(2)
+    window_rename_failures = 0
     while True:
         window = get_window("Wizard101")
         window.set_title(wizard)
         window = get_window(wizard)
         if window is not None:
-            break
-    win = get_window(wizard)
-    window_coords = win_pos_dictionary[wizard]
+            try:
+                win = get_window(wizard)
+                window_coords = win_pos_dictionary[wizard]
+                break
+            except Exception:
+                window_rename_failures += 1
+                sleep(1)
+        if window_rename_failures >= 5:
+            full_restart("Error: Exception 'Wizard101 window not found' caught and forced restart.")
     win.move(window_coords[0], window_coords[1])
     coord_list = [(414, 322), (406, 602), (27, 58)]
     absolute_coords = get_abs_coords(wizard, coord_list)
