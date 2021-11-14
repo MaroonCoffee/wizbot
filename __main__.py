@@ -805,6 +805,7 @@ def game_launcher(user, delay):
             sleep(1)
     ahk.click(absolute_coords[2])
     window_exist_fails = 0
+    sleep(2)
     while True:
         win = get_window("Wizard101")
         if win is None:
