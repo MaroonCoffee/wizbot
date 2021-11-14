@@ -804,12 +804,13 @@ def game_launcher(user, delay):
         except AttributeError:
             sleep(1)
     ahk.click(absolute_coords[2])
-    sleep(3)
+    sleep(5)
     window_rename_failures = 0
     window_coords = win_pos_dictionary[wizard]
     while True:
         win = get_window("Wizard101")
         win.set_title(wizard)
+        win = get_window(wizard)
         try:
             win.move(window_coords[0], window_coords[1])
             sleep(1)
@@ -819,8 +820,9 @@ def game_launcher(user, delay):
             win = get_window("Wizard101")
             win.set_title(wizard)
             sleep(1)
-        if window_rename_failures >= 5:
+        if window_rename_failures >= 10:
             full_restart("Error: Exception 'Wizard101 window not found' caught and forced restart.")
+    win = get_window(wizard)
     win.move(window_coords[0], window_coords[1])
     coord_list = [(414, 322), (406, 602), (27, 58)]
     absolute_coords = get_abs_coords(wizard, coord_list)
