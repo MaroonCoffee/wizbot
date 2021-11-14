@@ -885,19 +885,11 @@ def close_game():
             win.kill()
         except AttributeError:
             pass
-    sleep(5)
-    while True:
-        try:
-            win = get_window("Ravenwood News | Wizard101 Free Online Game")
-            win.kill()
-        except AttributeError:
-            try:
-                win = get_window("429 Too Many Requests")
-                win.kill()
-            except AttributeError:
-                break
-    try_close_window("Error")
     try_close_window("Wizard101")
+    sleep(5)
+    try_close_window("Ravenwood News | Wizard101 Free Online Game")
+    try_close_window("429 Too Many Requests")
+    try_close_window("Error")
 
 
 # Fully restarts all instances of Wizard101
