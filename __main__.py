@@ -763,13 +763,15 @@ def game_launcher(user, delay):
                 activate_window("Wizard101")
                 break
             except AttributeError:
-                try:
-                    activate_window("Error")
-                    win = get_window("Error")
-                    win.kill()
-                    os.startfile(filepath)
-                except AttributeError:
-                    sleep(1)
+                while True:
+                    try:
+                        activate_window("Error")
+                        win = get_window("Error")
+                        win.kill()
+                        os.startfile(filepath)
+                    except AttributeError:
+                        sleep(1)
+                        break
         restart_fails = 0
         while True:
             login_button = get_image_coords("login_gray", "Wizard101", (616, 517), (159, 76))
@@ -802,26 +804,21 @@ def game_launcher(user, delay):
         except AttributeError:
             sleep(1)
     ahk.click(absolute_coords[2])
-    while True:
-        try:
-            activate_window("Wizard101")
-            break
-        except AttributeError:
-            sleep(1)
-    sleep(2)
+    sleep(3)
     window_rename_failures = 0
+    window_coords = win_pos_dictionary[wizard]
     while True:
-        window = get_window("Wizard101")
-        window.set_title(wizard)
-        window = get_window(wizard)
-        if window is not None:
-            try:
-                win = get_window(wizard)
-                window_coords = win_pos_dictionary[wizard]
-                break
-            except Exception:
-                window_rename_failures += 1
-                sleep(1)
+        win = get_window("Wizard101")
+        win.set_title(wizard)
+        try:
+            win.move(window_coords[0], window_coords[1])
+            sleep(1)
+            break
+        except Exception:
+            window_rename_failures += 1
+            win = get_window("Wizard101")
+            win.set_title(wizard)
+            sleep(1)
         if window_rename_failures >= 5:
             full_restart("Error: Exception 'Wizard101 window not found' caught and forced restart.")
     win.move(window_coords[0], window_coords[1])
