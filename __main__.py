@@ -804,7 +804,7 @@ def game_launcher(user, delay):
         except AttributeError:
             sleep(1)
     ahk.click(absolute_coords[2])
-    sleep(7)
+    sleep(12)
     window_rename_failures = 0
     while True:
         try:
