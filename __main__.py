@@ -815,7 +815,7 @@ def game_launcher(user, delay):
         except AttributeError:
             sleep(1)
     ahk.click(absolute_coords[2])
-    sleep(7)
+    sleep(12)
     window_rename_failures = 0
     while True:
         try:
@@ -828,11 +828,7 @@ def game_launcher(user, delay):
             sleep(1)
         if window_rename_failures >= 10:
             full_restart("Error: Exception 'Wizard101 window not found' caught and forced restart.")
-    window_coords = win_pos_dictionary[wizard]
-    win = get_window(wizard)
-    win.move(window_coords[0], window_coords[1])
-    coord_list = [(414, 322), (406, 602), (27, 58)]
-    absolute_coords = get_abs_coords(wizard, coord_list)
+    absolute_coords = get_abs_coords(wizard, (27, 58), True)
     while True:
         play_button = get_image_coords("menu_play", wizard, (304, 566), (192, 60))
         try:
@@ -842,11 +838,15 @@ def game_launcher(user, delay):
         if play_button or big_play_button is not None:
             break
         else:
-            ahk.click(absolute_coords[2])
+            ahk.click(absolute_coords[0], absolute_coords[1])
             sleep(0.5)
     unfullscreen(wizard, 0.5)
+    window_coords = win_pos_dictionary[wizard]
+    win = get_window(wizard)
+    win.move(window_coords[0], window_coords[1])
     character_selector(wizard)
-    ahk.click(absolute_coords[1])
+    absolute_coords = get_abs_coords(wizard, (406, 602), True)
+    ahk.click(absolute_coords[0], absolute_coords[1])
     sleep(5)
     clear_shop(wizard)
     auto_spin(wizard)
