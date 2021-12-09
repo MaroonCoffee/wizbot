@@ -36,6 +36,7 @@ filepath = private.file_path
 fast_empower_buy = private.fast_empower_buy
 lag_mode = private.lag_mode
 in_game = private.in_game
+min_mem_status = private.min_mem_status
 
 
 # Base Functions -------------------------------------------------------------------------------------------------------
@@ -324,7 +325,7 @@ def battle_enter_handler():
             wizard_to_skip += 1
     exit_channel = Queue()
     p1 = Process(target=battle_init, args=(exit_channel, full_wizard_name_list))
-    p2 = Process(target=backpack_check_all, args=(exit_channel, wizard_name_list, wizard_to_skip))
+    p2 = Process(target=backpack_check_all, args=(exit_channel, wizard_name_list, wizard_to_skip, min_mem_status))
     p1.start()
     p2.start()
     while True:
@@ -409,27 +410,37 @@ def battle(in_dungeon=False):
 
 
 # Checks all 3 of the minion accounts for full backpacks
-def backpack_check_all(exit_channel, full_list, wizskip):
+def backpack_check_all(exit_channel, full_list, wizskip, membership):
     sleep(1)
     wizards_to_check = full_list
     if lag_mode:
         del wizards_to_check[wizskip]
     for wizard in wizards_to_check:
-        check = backpack_check(wizard)
+        if membership:
+            check = backpack_check(wizard, True)
+        else:
+            check = backpack_check(wizard, False)
         if check:
             exit_channel.put(201)
 
 
 # Checks a given wizard's backpack to see if their backpack is full
-def backpack_check(wizard):
+def backpack_check(wizard, membership):
     backpack_full = False
     activate_window(wizard)
     ahk_key_press('b')
-    for num in range(75, 81):
-        converted_num = str(num)
-        backpack_num = get_image_coords(converted_num, wizard, (219, 509), (361, 562), confidence=0.99)
-        if backpack_num is not None:
-            backpack_full = True
+    if membership:
+        for num in range(145, 151):
+            converted_num = str(num)
+            backpack_num = get_image_coords(converted_num, wizard, (219, 509), (361, 562), confidence=0.99)
+            if backpack_num is not None:
+                backpack_full = True
+    else:
+        for num in range(75, 81):
+            converted_num = str(num)
+            backpack_num = get_image_coords(converted_num, wizard, (219, 509), (361, 562), confidence=0.99)
+            if backpack_num is not None:
+                backpack_full = True
     ahk_key_press('Escape')
     if backpack_full:
         return True
