@@ -15,6 +15,7 @@ file_path = ''
 fast_empower_buy = True
 lag_mode = False
 in_game = False
+min_mem_status = False
 
 
 def encrypted_password_creator():
