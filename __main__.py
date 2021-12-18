@@ -805,6 +805,7 @@ def game_launcher(user, delay):
     ahk.type(user_dictionary[user])
     ahk.click(absolute_coords[2])
     ahk.click(absolute_coords[3])
+    failsafe_timer = 0
     while True:
         try:
             play_button = get_image_coords("launcher_play", "Wizard101", (616, 517), (159, 76))
@@ -812,8 +813,12 @@ def game_launcher(user, delay):
                 break
             else:
                 sleep(1)
+                failsafe_timer += 1
         except AttributeError:
             sleep(1)
+            failsafe_timer += 1
+        if failsafe_timer >= 600:
+            full_restart("Error: Exception 'game didn't launch within 10 minute period' caught and forced restart.")
     ahk.click(absolute_coords[2])
     sleep(12)
     window_rename_failures = 0
