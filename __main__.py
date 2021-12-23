@@ -903,6 +903,7 @@ def close_game():
     sleep(5)
     try_close_window("Ravenwood News | Wizard101 Free Online Game")
     try_close_window("429 Too Many Requests")
+    try_close_window("403 - Forbidden")
     try_close_window("Error")
 
 
