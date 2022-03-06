@@ -899,6 +899,9 @@ def close_game():
             win.kill()
         except AttributeError:
             pass
+    while True:
+        if os.system("TASKKILL /F /IM wizardlauncher.exe") != 0:
+            break
     try_close_window("Wizard101")
     sleep(5)
     try_close_window("Ravenwood News | Wizard101 Free Online Game")
