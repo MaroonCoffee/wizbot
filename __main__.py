@@ -372,11 +372,15 @@ def exit_code_handler(exit_code):
 
 # Checks to see if the player is still in battle
 def battle_completed_detector(exit_channel, full_list):
+    failsafe_timer = 0
     while True:
         piggle_coords = get_image_coords("piggle", full_list[0], (110, 511), (54, 62))
         if piggle_coords is not None:
             break
         sleep(1)
+        failsafe_timer += 1
+        if failsafe_timer >= 120:
+            full_restart("Error: Exception 'battle didn't complete within 2 minute period' caught and forced restart.")
     exit_channel.put(100)
 
 
