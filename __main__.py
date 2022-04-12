@@ -907,7 +907,7 @@ def close_game():
         if os.system("TASKKILL /F /IM wizardlauncher.exe") != 0:
             break
     try_close_window("Wizard101")
-    sleep(5)
+    sleep(15)
     try_close_window("Ravenwood News | Wizard101 Free Online Game")
     try_close_window("429 Too Many Requests")
     try_close_window("403 - Forbidden")
