@@ -10,7 +10,7 @@ encrypted_username = ''
 
 encrypted_wizard_name = ''
 
-file_path = ''
+folder_path = ''
 
 fast_empower_buy = True
 lag_mode = False
