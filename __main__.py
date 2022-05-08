@@ -32,7 +32,8 @@ wizard_to_skip = 0
 ahk = AHK()
 keyboard = Controller()
 
-filepath = private.file_path
+folderpath = private.folder_path
+filepath = folderpath + "\\Wizard101.exe"
 
 fast_empower_buy = private.fast_empower_buy
 lag_mode = private.lag_mode
@@ -840,7 +841,7 @@ def game_launcher(user, delay):
             if window_rename_failures >= 10:
                 full_restart("Error: Exception 'Wizard101 window not found' caught and forced restart.")
     else:
-        wizwalker.utils.override_wiz_install_location("E:\Wizard101")
+        wizwalker.utils.override_wiz_install_location(folderpath)
         wizwalker.WizWalker.start_wiz_client()
         while True:
             try:
