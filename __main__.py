@@ -13,6 +13,7 @@ import stdiomask
 from cryptography.fernet import Fernet
 import private
 import datetime
+import wizwalker
 
 
 # Base Info ------------------------------------------------------------------------------------------------------------
@@ -770,73 +771,109 @@ def decrypter(password, encoded_text):
 # noinspection PyBroadException
 # Launches 5 instances of Wizard101 and names the windows according to the wizard logged into.
 def game_launcher(user, delay):
-    while True:
-        wizard = name_dictionary[user]
-        os.startfile(filepath)
+    wizard = name_dictionary[user]
+    if user == user_list[0]:
+        while True:
+            os.startfile(filepath)
+            while True:
+                try:
+                    activate_window("Wizard101")
+                    break
+                except AttributeError:
+                    while True:
+                        try:
+                            activate_window("Error")
+                            win = get_window("Error")
+                            win.kill()
+                            os.startfile(filepath)
+                        except AttributeError:
+                            sleep(1)
+                            break
+            restart_fails = 0
+            while True:
+                login_button = get_image_coords("login_gray", "Wizard101", (616, 517), (159, 76))
+                if login_button is not None:
+                    restart_fail = False
+                    break
+                else:
+                    sleep(1)
+                    restart_fails += 1
+                if restart_fails >= 120:
+                    restart_fail = True
+                    break
+            if not restart_fail:
+                break
+        coord_list = [(205, 562), (400, 563), (698, 555), (734, 487)]
+        absolute_coords = get_abs_coords("Wizard101", coord_list)
+        ahk.click(absolute_coords[0])
+        ahk.type(user)
+        ahk.click(absolute_coords[1])
+        ahk.type(user_dictionary[user])
+        ahk.click(absolute_coords[2])
+        ahk.click(absolute_coords[3])
+        failsafe_timer = 0
+        while True:
+            try:
+                play_button = get_image_coords("launcher_play", "Wizard101", (616, 517), (159, 76))
+                if play_button is not None:
+                    break
+                else:
+                    sleep(1)
+                    failsafe_timer += 1
+            except AttributeError:
+                sleep(1)
+                failsafe_timer += 1
+            if failsafe_timer >= 600:
+                full_restart("Error: Exception 'game didn't launch within 10 minute period' caught and forced restart.")
+        ahk.click(absolute_coords[2])
+        sleep(12)
+        window_rename_failures = 0
+        while True:
+            try:
+                win = get_window("Wizard101")
+                win.set_title(wizard)
+                sleep(1)
+                break
+            except Exception:
+                window_rename_failures += 1
+                sleep(1)
+            if window_rename_failures >= 10:
+                full_restart("Error: Exception 'Wizard101 window not found' caught and forced restart.")
+    else:
+        wizwalker.utils.override_wiz_install_location("E:\Wizard101")
+        wizwalker.WizWalker.start_wiz_client()
         while True:
             try:
                 activate_window("Wizard101")
                 break
             except AttributeError:
-                while True:
-                    try:
-                        activate_window("Error")
-                        win = get_window("Error")
-                        win.kill()
-                        os.startfile(filepath)
-                    except AttributeError:
-                        sleep(1)
-                        break
+                sleep(1)
         restart_fails = 0
         while True:
-            login_button = get_image_coords("login_gray", "Wizard101", (616, 517), (159, 76))
-            if login_button is not None:
-                restart_fail = False
+            login_logo = get_image_coords("quick_login", "Wizard101", (330, 243), (51, 64))
+            if login_logo is not None:
                 break
             else:
                 sleep(1)
                 restart_fails += 1
-            if restart_fails >= 120:
-                restart_fail = True
-                break
-        if not restart_fail:
-            break
-    coord_list = [(205, 562), (400, 563), (698, 555), (734, 487)]
-    absolute_coords = get_abs_coords("Wizard101", coord_list)
-    ahk.click(absolute_coords[0])
-    ahk.type(user)
-    ahk.click(absolute_coords[1])
-    ahk.type(user_dictionary[user])
-    ahk.click(absolute_coords[2])
-    ahk.click(absolute_coords[3])
-    failsafe_timer = 0
-    while True:
-        try:
-            play_button = get_image_coords("launcher_play", "Wizard101", (616, 517), (159, 76))
-            if play_button is not None:
-                break
-            else:
+            if restart_fails >= 20:
+                full_restart("Error: Exception 'Wizard101 window not found' caught and forced restart.")
+        window_rename_failures = 0
+        while True:
+            try:
+                win = get_window("Wizard101")
+                win.set_title(wizard)
                 sleep(1)
-                failsafe_timer += 1
-        except AttributeError:
-            sleep(1)
-            failsafe_timer += 1
-        if failsafe_timer >= 600:
-            full_restart("Error: Exception 'game didn't launch within 10 minute period' caught and forced restart.")
-    ahk.click(absolute_coords[2])
-    sleep(12)
-    window_rename_failures = 0
-    while True:
-        try:
-            win = get_window("Wizard101")
-            win.set_title(wizard)
-            sleep(1)
-            break
-        except Exception:
-            window_rename_failures += 1
-            sleep(1)
-        if window_rename_failures >= 10:
-            full_restart("Error: Exception 'Wizard101 window not found' caught and forced restart.")
+                break
+            except Exception:
+                window_rename_failures += 1
+                sleep(1)
+            if window_rename_failures >= 10:
+                full_restart("Error: Exception 'Wizard101 window not found' caught and forced restart.")
+        ahk.type(user)
+        ahk.key_press('Tab')
+        ahk.type(user_dictionary[user])
+        ahk.key_press('Enter')
     absolute_coords = get_abs_coords(wizard, (27, 58), True)
     while True:
         play_button = get_image_coords("menu_play", wizard, (304, 566), (192, 60))
