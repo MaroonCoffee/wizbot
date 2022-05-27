@@ -383,6 +383,7 @@ def battle_completed_detector(exit_channel, full_list):
         failsafe_timer += 1
         if failsafe_timer >= 120:
             full_restart("Error: Exception 'battle didn't complete within 2 minute period' caught and forced restart.")
+            raise DummyError("RestartBattle")
     exit_channel.put(100)
 
 
@@ -825,7 +826,7 @@ def game_launcher(user, delay):
                 sleep(1)
                 failsafe_timer += 1
             if failsafe_timer >= 600:
-                full_restart("Error: Exception 'game didn't launch within 10 minute period' caught and forced restart.")
+                raise DummyError("game didn't launch within 10 minute period")
         ahk.click(absolute_coords[2])
         sleep(12)
         window_rename_failures = 0
@@ -839,7 +840,7 @@ def game_launcher(user, delay):
                 window_rename_failures += 1
                 sleep(1)
             if window_rename_failures >= 10:
-                full_restart("Error: Exception 'Wizard101 window not found' caught and forced restart.")
+                raise DummyError("Wizard101 window not found")
     else:
         wizwalker.utils.override_wiz_install_location(folderpath)
         wizwalker.WizWalker.start_wiz_client()
@@ -858,7 +859,7 @@ def game_launcher(user, delay):
                 sleep(1)
                 restart_fails += 1
             if restart_fails >= 20:
-                full_restart("Error: Exception 'Wizard101 window not found' caught and forced restart.")
+                raise DummyError("Wizard101 window not found")
         window_rename_failures = 0
         while True:
             try:
@@ -870,7 +871,7 @@ def game_launcher(user, delay):
                 window_rename_failures += 1
                 sleep(1)
             if window_rename_failures >= 10:
-                full_restart("Error: Exception 'Wizard101 window not found' caught and forced restart.")
+                raise DummyError("Wizard101 window not found")
         ahk.type(user)
         ahk.key_press('Tab')
         ahk.type(user_dictionary[user])
