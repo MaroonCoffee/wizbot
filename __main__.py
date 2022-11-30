@@ -170,11 +170,9 @@ def auto_walk(wizard, delay=0.1):
 def teleport(wizard, delay=0, waypoint=False):
     activate_window(wizard)
     if waypoint:
-        # coord_list = [(777, 48), (705, 145), (454, 114), (411, 394), (781, 360)]
-        coord_list = [(777, 48), (705, 145), (705, 145)]
+        coord_list = [(777, 48), (705, 145), (454, 114), (411, 394), (781, 360)]
     else:
-        # coord_list = [(777, 48), (705, 122), (454, 114), (411, 394), (781, 360)]
-        coord_list = [(777, 48), (705, 122), (705, 122)]
+        coord_list = [(777, 48), (705, 122), (454, 114), (411, 394), (781, 360)]
     absolute_coords = get_abs_coords(wizard, coord_list)
     ahk_key_press('w')
     window_clicks(absolute_coords)

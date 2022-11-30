@@ -93,11 +93,11 @@ def main():
     # coord_list = [[440, 178], [438, 217], [522, 477]]
     # converted_coords = client_coords_converter(coord_list)
     # print(converted_coords)
-    # mouse_to_relative_coords()
+    mouse_to_relative_coords()
     # get_region()
     # print("Saving first coords...")
     # sleep(3)
-    first_coords = pyautogui.position()
+    # first_coords = pyautogui.position()
     # print("Saving second coords...")
     # sleep(3)
     # second_coords = pyautogui.position()
