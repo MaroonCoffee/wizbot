@@ -437,7 +437,7 @@ def backpack_check(wizard, membership):
     activate_window(wizard)
     ahk_key_press('b')
     if membership:
-        for num in range(95, 101):
+        for num in range(145, 151):
             converted_num = str(num)
             backpack_num = get_image_coords(converted_num, wizard, (219, 509), (361, 562), confidence=0.99)
             if backpack_num is not None:
