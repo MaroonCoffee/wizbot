@@ -176,7 +176,7 @@ def teleport(wizard, delay=0, waypoint=False):
     absolute_coords = get_abs_coords(wizard, coord_list)
     ahk_key_press('w')
     # window_clicks(absolute_coords)
-    window_clicks(absolute_coords, 0.3)
+    window_clicks(absolute_coords, 0.4)
     sleep(delay)
 
 
