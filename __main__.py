@@ -170,12 +170,15 @@ def auto_walk(wizard, delay=0.1):
 def teleport(wizard, delay=0, waypoint=False):
     activate_window(wizard)
     if waypoint:
-        coord_list = [(777, 48), (705, 145), (454, 114), (411, 394), (781, 360)]
+        # coord_list = [(777, 48), (705, 145), (454, 114), (411, 394), (781, 360)]
+        coord_list = [(777, 48), (705, 145), (705, 145)]
     else:
-        coord_list = [(777, 48), (705, 122), (454, 114), (411, 394), (781, 360)]
+        # coord_list = [(777, 48), (705, 122), (454, 114), (411, 394), (781, 360)]
+        coord_list = [(777, 48), (705, 122), (705, 122)]
     absolute_coords = get_abs_coords(wizard, coord_list)
     ahk_key_press('w')
-    window_clicks(absolute_coords)
+    # window_clicks(absolute_coords)
+    window_clicks(absolute_coords, 0.3)
     sleep(delay)
 
 
@@ -775,6 +778,7 @@ def decrypter(password, encoded_text):
 def game_launcher(user, delay):
     wizard = name_dictionary[user]
     if user == user_list[0]:
+    # if False:
         while True:
             os.startfile(filepath)
             while True:
