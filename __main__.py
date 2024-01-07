@@ -788,6 +788,7 @@ def decrypter(password, encoded_text):
 # Launches 5 instances of Wizard101 and names the windows according to the wizard logged into.
 def game_launcher(user, delay):
     wizard = name_dictionary[user]
+    global quick_launch
     if user == user_list[0] and not quick_launch:
         while True:
             os.startfile(filepath)
@@ -857,7 +858,6 @@ def game_launcher(user, delay):
                 raise DummyError("Wizard101 window not found")
     else:
         if quick_launch:
-            global quick_launch
             quick_launch = False
         wizwalker.utils.override_wiz_install_location(folderpath)
         wizwalker.WizWalker.start_wiz_client()
