@@ -2,4 +2,3 @@ venv/
 .idea/
 __pycache__/
 temp.png
-private.py

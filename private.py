@@ -12,12 +12,6 @@ encrypted_wizard_name = ''
 
 folder_path = ''
 
-fast_empower_buy = True
-lag_mode = False
-in_game = False
-min_mem_status = False
-
-
 def encrypted_password_creator():
     usr_input = stdiomask.getpass("Enter your encyrption key, or 'N' to have one generated for you: ")
     if usr_input == 'N' or usr_input == 'n':
