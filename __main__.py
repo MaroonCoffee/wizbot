@@ -14,6 +14,7 @@ from cryptography.fernet import Fernet
 import private
 import datetime
 import wizwalker
+import argparse
 
 
 # Base Info ------------------------------------------------------------------------------------------------------------
@@ -35,11 +36,11 @@ keyboard = Controller()
 folderpath = private.folder_path
 filepath = folderpath + "\\Wizard101.exe"
 
-fast_empower_buy = private.fast_empower_buy
-lag_mode = private.lag_mode
-in_game = private.in_game
-min_mem_status = private.min_mem_status
-
+fast_empower_buy = False
+lag_mode = False
+in_game = False
+min_mem_status = False
+quick_launch = False
 
 # Base Functions -------------------------------------------------------------------------------------------------------
 
@@ -775,8 +776,7 @@ def decrypter(password, encoded_text):
 # Launches 5 instances of Wizard101 and names the windows according to the wizard logged into.
 def game_launcher(user, delay):
     wizard = name_dictionary[user]
-    if user == user_list[0]:
-    # if False:
+    if user == user_list[0] and not quick_launch:
         while True:
             os.startfile(filepath)
             while True:
@@ -966,12 +966,42 @@ def full_restart(error):
     function_caller("book_check", full_wizard_name_list, 0)
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(prog="WizBot", description="Automates the collection of empowers in Wizard101")
+    parser.add_argument("-f", "-fast_empower_buy", action='store_false',
+                        help="Disabling bypasses the price check and buys empowers at any price. Default True.")
+    parser.add_argument("-l", "-lag_mode", action='store_true',
+                        help="Adds extra delay on many functions to improve "
+                             "consistency for slower computers. Default False.")
+    parser.add_argument("-i", "-in_game", action='store_true',
+                        help="Bypasses the game launcher, useful if the game is already open. Default False.")
+    parser.add_argument("-m", "-min_mem_status", action='store_true',
+                        help="Changes the maximum backpack value that minions will teleport to the bazaar for, "
+                             "used when KingsIsle gives out temporary memberships. Default False.")
+    parser.add_argument("-q", "-quick_launch", action='store_true',
+                        help="Uses the quick launcher on startup, improves speed if it is known there "
+                             "is no update. Default False.")
+    args = parser.parse_args()
+
+    global fast_empower_buy
+    global lag_mode
+    global in_game
+    global min_mem_status
+    global quick_launch
+    fast_empower_buy = args.f
+    lag_mode = args.l
+    in_game = args.i
+    min_mem_status = args.m
+    quick_launch = args.q
+
+
 # Main Functions -------------------------------------------------------------------------------------------------------
 
 
 # Main function
 # noinspection PyBroadException
 def main():
+    parse_args()
     password_processor()
     if not in_game:
         while True:
@@ -986,6 +1016,9 @@ def main():
                     break
                 except Exception:
                     close_game()
+    else:
+        function_caller("teleport_waypoint", full_wizard_name_list, 0)
+        function_caller("book_check", full_wizard_name_list, 0)
     in_dungeon = False
     while True:
         try:
