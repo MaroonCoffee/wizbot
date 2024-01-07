@@ -856,6 +856,9 @@ def game_launcher(user, delay):
             if window_rename_failures >= 10:
                 raise DummyError("Wizard101 window not found")
     else:
+        if quick_launch:
+            global quick_launch
+            quick_launch = False
         wizwalker.utils.override_wiz_install_location(folderpath)
         wizwalker.WizWalker.start_wiz_client()
         while True:
