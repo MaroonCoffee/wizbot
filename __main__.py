@@ -362,15 +362,18 @@ def exit_code_handler(exit_code):
         sleep(2)
         book_check(full_wizard_name_list[0], 0)
         battle_enter_handler()
-    if exit_code == 101:
+    elif exit_code == 101:
         reset()
         battle_enter_handler()
-    if exit_code == 200:
+    elif exit_code == 200:
         raise DummyError("RestartBattleInDungeon")
-    if exit_code == 201:
+    elif exit_code == 201:
         bazaar()
-    if exit_code == 300:
-        full_restart(("Error: " + "book" + " not found for wizard " + full_wizard_name_list[0]))
+    elif exit_code == 300:
+        full_restart("Error: " + "book" + " not found for wizard " + full_wizard_name_list[0])
+        raise DummyError("RestartBattle")
+    elif exit_code == 400:
+        full_restart("Error: Battle did not end within 3 minutes--assumed interruption and restarted")
         raise DummyError("RestartBattle")
 
 
@@ -391,12 +394,21 @@ def battle_completed_detector(exit_channel, full_list):
 
 # Checks to see if a round has failed
 def failed_round_detector(exit_channel, full_list):
+    time_out = 60
+    timed_out = False
     while True:
         pass_coords = get_image_coords("pass", full_list[0], (201, 376), (100, 42))
         if pass_coords is not None:
             break
         sleep(1)
-    exit_channel.put(101)
+        time_out -= 1
+        if time_out <= 0:
+            timed_out = True
+            break
+    if timed_out:
+        exit_channel.put(400)
+    else:
+        exit_channel.put(101)
 
 
 # Main battle loop function
