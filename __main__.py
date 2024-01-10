@@ -246,7 +246,7 @@ def unfullscreen(wizard, delay):
 
 
 # Checks the UI of a given wizard to make sure they are in the right area. If not, full_restarts program after 30 fails
-def ui_check(wizard, image, region1, region2, delay, confidence=0.8, multiprocessing=False):
+def ui_check(wizard, image, region1, region2, delay, confidence=0.8, multiprocessing=False, in_bazaar=False):
     activate_window(wizard)
     emergency_exit = 0
     while True:
@@ -263,7 +263,10 @@ def ui_check(wizard, image, region1, region2, delay, confidence=0.8, multiproces
                 return "Error"
             else:
                 full_restart(("Error: " + image + " not found for wizard " + wizard))
-                raise DummyError("RestartBattle")
+                if in_bazaar:
+                    raise DummyError("RestartBazaar")
+                else:
+                    raise DummyError("RestartBattle")
     sleep(delay)
 
 
@@ -437,10 +440,7 @@ def backpack_check_all(exit_channel, full_list, wizskip, membership):
     if lag_mode:
         del wizards_to_check[wizskip]
     for wizard in wizards_to_check:
-        if membership:
-            check = backpack_check(wizard, True)
-        else:
-            check = backpack_check(wizard, False)
+        check = backpack_check(wizard, membership)
         if check:
             exit_channel.put(201)
 
@@ -476,7 +476,7 @@ def backpack_check(wizard, membership):
 def bazaar():
     activate_window(full_wizard_name_list[0])
     ahk_key_press('w')
-    ui_check(full_wizard_name_list[0], "book", (699, 508), (107, 125), 0)
+    ui_check(full_wizard_name_list[0], "book", (699, 508), (107, 125), 0, in_bazaar=True)
     home_coords = get_abs_coords(full_wizard_name_list[0], (649, 582), True)
     ahk.click(home_coords)
     sleep(7)
@@ -505,7 +505,7 @@ def initiate_bazaar(wizard, delay):
     ahk_key_press('x')
     sleep(0.5)
     ahk.click(666, 174)
-    ui_check(wizard, "bazaar_backpack", (421, 855), (83, 90), 0, confidence=0.95)
+    ui_check(wizard, "bazaar_backpack", (421, 855), (83, 90), 0, confidence=0.95, in_bazaar=True)
     item_sell(wizard)
     ahk.click(1456, 897)
     sleep(0.5)
@@ -529,6 +529,7 @@ def item_sell(wizard):
     page = 1
     while True:
         sell_streak = 0
+        sell_fails = 5
         row = 1
         ahk.double_click(1069, 371)
         while row < 8:
@@ -549,13 +550,17 @@ def item_sell(wizard):
                 ahk.double_click(1069, row_coord)
                 sell_streak = 0
             if sell_streak >= 30:
+                sell_fails -= 1
+                if sell_fails <= 0:
+                    full_restart(("Error: Stuck in sell loop for wizard " + wizard))
+                    raise DummyError("RestartBazaar")
                 ahk.click(1456, 897)
                 sleep(1.5)
                 ahk_key_press('x')
                 sleep(0.5)
                 ahk.click(666, 174)
                 category, page, row, sell_streak = 1, 1, 1, 0
-                ui_check(wizard, "bazaar_backpack", (421, 855), (83, 90), 0, confidence=0.95)
+                ui_check(wizard, "bazaar_backpack", (421, 855), (83, 90), 0, confidence=0.95, in_bazaar=True)
         category += 1
         if category == 8 and page == 1:
             category = 9
@@ -655,7 +660,7 @@ def bazaar_buy(wizard):
             ahk.click(1428, 299)
             sleep(0.5)
             empower_drought = 0
-            ui_check(wizard, "bazaar_cards", (421, 855), (83, 90), 0, confidence=0.95)
+            ui_check(wizard, "bazaar_cards", (421, 855), (83, 90), 0, confidence=0.95, in_bazaar=True)
 
 
 # Either checks to see if there are more than 9 empowers, and if so, buys until there are only 9 left, or buys all
@@ -1035,14 +1040,21 @@ def main():
         function_caller("teleport_waypoint", full_wizard_name_list, 0)
         function_caller("book_check", full_wizard_name_list, 0)
     in_dungeon = False
+    in_bazaar = False
     while True:
         try:
-            battle(in_dungeon)
+            if in_bazaar:
+                in_bazaar = False
+                bazaar()
+            else:
+                battle(in_dungeon)
         except Exception as e:
             if str(e) == "RestartBattleInDungeon":
                 in_dungeon = True
             elif str(e) == "RestartBattle":
                 in_dungeon = False
+            elif str(e) == "RestartBazaar":
+                in_bazaar = True
             else:
                 while True:
                     try:
