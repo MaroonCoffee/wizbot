@@ -614,7 +614,7 @@ def bazaar_buy(wizard):
         ahk.click(1104, 827)
         ahk.click(1008, 272)
         sleep(0.75)
-        ahk.click(1149, 657)
+        ahk.double_click(1149, 657)
         sleep(0.75)
         ahk.double_click(1421, 344)
         empower = get_image_coords("empower", wizard, (840, 360), (332, 65), confidence=0.95)
@@ -1001,6 +1001,8 @@ def parse_args():
     parser.add_argument("-q", "-quick_launch", action='store_true',
                         help="Uses the quick launcher on startup, improves speed if it is known there "
                              "is no update. Default False.")
+    parser.add_argument("-b", "-start_bazaar", action='store_true',
+                        help="Starts the state in bazaar instead of defaulting to battle. Default False.")
     args = parser.parse_args()
 
     global fast_empower_buy
@@ -1008,11 +1010,13 @@ def parse_args():
     global in_game
     global min_mem_status
     global quick_launch
+    global start_bazaar
     fast_empower_buy = args.f
     lag_mode = args.l
     in_game = args.i
     min_mem_status = args.m
     quick_launch = args.q
+    start_bazaar = args.b
 
 
 # Main Functions -------------------------------------------------------------------------------------------------------
@@ -1040,7 +1044,7 @@ def main():
         function_caller("teleport_waypoint", full_wizard_name_list, 0)
         function_caller("book_check", full_wizard_name_list, 0)
     in_dungeon = False
-    in_bazaar = False
+    in_bazaar = start_bazaar
     while True:
         try:
             if in_bazaar:
